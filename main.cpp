@@ -6,5 +6,4 @@
 
 int main(){
     std::cout << "zdes' pusto =(\n";
-    c c;
 }
