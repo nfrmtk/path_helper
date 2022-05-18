@@ -12,8 +12,9 @@ class path_helper{
 
 private:
     struct file_info{
-        uint32_t counter = 0;
-        std::vector<path>::iterator paths[];
+        using iterator_vector = std::vector<std::vector<path>::iterator>;
+        size_t counter = 0;
+        iterator_vector paths;
     };
     std::vector<path> path_parsed;
     std::vector<bool> is_folder_checked;
@@ -22,7 +23,7 @@ public:
     path_helper();
     auto /* TODO: avoid type deduction */ check_all_folders();
 
-    uint32_t check_specific_folder(const std::vector<path>::iterator & folder);
+    std::pair<size_t, std::string>&& check_specific_folder(const path & folder);
 
     auto /* TODO: avoid type deduction */ check_for_specific_program (const path& executable);
 private:

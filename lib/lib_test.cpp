@@ -25,21 +25,26 @@ auto path_helper::check_all_folders() {
 
 }
 
-uint32_t path_helper::check_specific_folder(const std::vector<path>::iterator& folder) {
-    std::filesystem::directory_iterator it(*folder);
-    uint32_t ans = 0;
-    for (; it != std::filesystem::directory_iterator(); ++it){
-        auto file = *it;
-        if ( path_helper::if_executable(file))
-        {
-            ++(files[it->path().filename()].counter);
-            // files[it->path().filename()].paths[1] = folder; // TODO: not working yet
-            ++ans;
-        }
-
+std::pair<size_t, std::string>&& path_helper::check_specific_folder(const path& folder) {
+    std::pair<size_t, std::string> ans{0, ""};
+    auto path_iterator = std::find(path_parsed.begin(), path_parsed.end(), folder);
+    if (path_iterator != path_parsed.end()) {
+        ans.second = "warning, you are searching in a directory that does not belong to path";
     }
-    // is_folder_checked[path_parsed.begin() - folder] = true; // TODO: uncomment if previous todo is fixed
-    return ans;
+    for (std::filesystem::directory_iterator it(folder);
+         it != std::filesystem::directory_iterator(); ++it){
+        auto entry = *it;
+        if ( path_helper::if_executable(entry))
+        {
+            if (path_iterator != path_parsed.end()) {
+                ++(files[entry.path().filename()].counter);
+                files[entry.path().filename()].paths.push_back(path_iterator);
+            }
+            ++ans.first;
+        }
+    }
+    if (path_iterator != path_parsed.end()) is_folder_checked[path_parsed.begin() - path_iterator] = true;
+    return std::move(ans);
 }
 
 auto path_helper::check_for_specific_program(const path_helper::path &executable) {
