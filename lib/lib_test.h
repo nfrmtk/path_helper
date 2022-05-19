@@ -23,7 +23,7 @@ public:
     path_helper();
     auto /* TODO: avoid type deduction */ check_all_folders();
 
-    std::pair<size_t, std::string>&& check_specific_folder(const path & folder);
+    std::pair<size_t, int8_t> check_specific_folder(const path & folder);
 
     auto /* TODO: avoid type deduction */ check_for_specific_program (const path& executable);
 private:

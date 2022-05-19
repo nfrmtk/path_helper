@@ -25,15 +25,17 @@ auto path_helper::check_all_folders() {
 
 }
 
-std::pair<size_t, std::string>&& path_helper::check_specific_folder(const path& folder) {
-    std::pair<size_t, std::string> ans{0, ""};
+std::pair<size_t, int8_t>     path_helper::check_specific_folder(const path& folder) {
+    std::pair<size_t, int8_t> ans{0, 0};
     auto path_iterator = std::find(path_parsed.begin(), path_parsed.end(), folder);
     if (path_iterator != path_parsed.end()) {
-        ans.second = "warning, you are searching in a directory that does not belong to path";
+        ans.second = 1;
+    }else{
+        ans.second = -1;
     }
     for (std::filesystem::directory_iterator it(folder);
          it != std::filesystem::directory_iterator(); ++it){
-        auto entry = *it;
+        const auto& entry = *it;
         if ( path_helper::if_executable(entry))
         {
             if (path_iterator != path_parsed.end()) {
