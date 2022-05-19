@@ -15,6 +15,11 @@ private:
         using iterator_vector = std::vector<std::vector<path>::iterator>;
         size_t counter = 0;
         iterator_vector paths;
+        file_info& add(const std::vector<path>::iterator & other){
+            counter++;
+            paths.push_back(other);
+            return *this;
+        }
     };
     std::vector<path> path_parsed;
     std::vector<bool> is_folder_checked;
@@ -25,7 +30,9 @@ public:
 
     std::pair<size_t, int8_t> check_specific_folder(const path & folder);
 
-    auto /* TODO: avoid type deduction */ check_for_specific_program (const path& executable);
+    void* /* TODO: avoid type deduction */ check_for_specific_program (const path& executable);
+
+    std::vector<path> paths_to_program(const path& program);
 private:
     static bool if_executable(const path& file);
 };
