@@ -16,6 +16,7 @@ private:
         size_t counter = 0;
         iterator_vector paths;
         file_info& add(const std::vector<path>::iterator & other){
+            std::cout << "AAA!\n";
             counter++;
             paths.push_back(other);
             return *this;
@@ -31,6 +32,8 @@ public:
     std::pair<size_t, int8_t> check_specific_folder(const path & folder);
 
     void* /* TODO: avoid type deduction */ check_for_specific_program (const path& executable);
+
+    bool is_folder_in_path(const path& folder);
 
     std::vector<path> paths_to_program(const path& program);
 private:
