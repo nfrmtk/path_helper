@@ -4,9 +4,10 @@
 
 #ifndef PATH_HELPER_LIB_TEST_H
 #define PATH_HELPER_LIB_TEST_H
-#include <argparse/argparse.hpp>
 #include <filesystem>
 #include <cstdlib>
+#include <cassert>
+#include <map>
 class path_helper{
     using path = std::filesystem::path;
 
@@ -16,7 +17,6 @@ private:
         size_t counter = 0;
         iterator_vector paths;
         file_info& add(const std::vector<path>::iterator & other){
-            std::cout << "AAA!\n";
             counter++;
             paths.push_back(other);
             return *this;
@@ -27,7 +27,7 @@ private:
     std::map<path, file_info> files;
 public:
     path_helper();
-    auto /* TODO: avoid type deduction */ check_all_folders();
+    void check_all_folders();
 
     std::pair<size_t, int8_t> check_specific_folder(const path & folder);
 
