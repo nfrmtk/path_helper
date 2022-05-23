@@ -10,7 +10,7 @@ int main(int argc, char* argv[] ){
     argparse::ArgumentParser ap("path_helper", "0.1");
     ap.add_argument("").remaining();
     ap.add_description("searches in PATH for files provided");
-    /*help("finds all occurences of file in user's path").remaining();*/
+    /*help("finds all occurences of file in user's path_t").remaining();*/
     try{
         ap.parse_args(argc, argv);
     }catch(...){

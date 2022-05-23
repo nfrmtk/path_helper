@@ -753,7 +753,7 @@ struct ContextOptions //!OCLINT too many fields
     bool no_breaks;            // to not break into the debugger
     bool no_skip;              // don't skip test cases which are marked to be skipped
     bool gnu_file_line;        // if line numbers should be surrounded with :x: and not (x):
-    bool no_path_in_filenames; // if the path to files should be removed from the output
+    bool no_path_in_filenames; // if the path_t to files should be removed from the output
     bool no_line_numbers;      // if source code line numbers should be omitted from the output
     bool no_debug_output;      // no output in the debug console when a debugger is attached
     bool no_skipped_summary;   // don't print "skipped" in the summary !!! UNDOCUMENTED !!!
@@ -2746,7 +2746,7 @@ DOCTEST_CLANG_SUPPRESS_WARNING("-Wmissing-field-initializers")
 DOCTEST_CLANG_SUPPRESS_WARNING("-Wc++98-compat")
 DOCTEST_CLANG_SUPPRESS_WARNING("-Wc++98-compat-pedantic")
 DOCTEST_CLANG_SUPPRESS_WARNING("-Wunused-member-function")
-DOCTEST_CLANG_SUPPRESS_WARNING("-Wnonportable-system-include-path")
+DOCTEST_CLANG_SUPPRESS_WARNING("-Wnonportable-system-include-path_t")
 
 DOCTEST_GCC_SUPPRESS_WARNING_PUSH
 DOCTEST_GCC_SUPPRESS_WARNING("-Wunknown-pragmas")
@@ -3476,7 +3476,7 @@ const char* failureString(assertType::Enum at) {
 
 DOCTEST_CLANG_SUPPRESS_WARNING_WITH_PUSH("-Wnull-dereference")
 DOCTEST_GCC_SUPPRESS_WARNING_WITH_PUSH("-Wnull-dereference")
-// depending on the current options this will remove the path of filenames
+// depending on the current options this will remove the path_t of filenames
 const char* skipPathFromFilename(const char* file) {
 #ifndef DOCTEST_CONFIG_DISABLE
     if(getContextOptions()->no_path_in_filenames) {
@@ -5711,7 +5711,7 @@ namespace {
               << Whitespace(sizePrefixDisplay*1) << "don't skip test cases marked as skip\n";
             s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "gfl, --" DOCTEST_OPTIONS_PREFIX_DISPLAY "gnu-file-line=<bool>          "
               << Whitespace(sizePrefixDisplay*1) << ":n: vs (n): for line numbers in output\n";
-            s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "npf, --" DOCTEST_OPTIONS_PREFIX_DISPLAY "no-path-filenames=<bool>      "
+            s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "npf, --" DOCTEST_OPTIONS_PREFIX_DISPLAY "no-path_t-filenames=<bool>      "
               << Whitespace(sizePrefixDisplay*1) << "only filenames and no paths in output\n";
             s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "nln, --" DOCTEST_OPTIONS_PREFIX_DISPLAY "no-line-numbers=<bool>        "
               << Whitespace(sizePrefixDisplay*1) << "0 instead of real line numbers in output\n";
@@ -6200,7 +6200,7 @@ void Context::parseArgs(int argc, const char* const* argv, bool withDefaults) {
     DOCTEST_PARSE_AS_BOOL_OR_FLAG("no-breaks", "nb", no_breaks, false);
     DOCTEST_PARSE_AS_BOOL_OR_FLAG("no-skip", "ns", no_skip, false);
     DOCTEST_PARSE_AS_BOOL_OR_FLAG("gnu-file-line", "gfl", gnu_file_line, !bool(DOCTEST_MSVC));
-    DOCTEST_PARSE_AS_BOOL_OR_FLAG("no-path-filenames", "npf", no_path_in_filenames, false);
+    DOCTEST_PARSE_AS_BOOL_OR_FLAG("no-path_t-filenames", "npf", no_path_in_filenames, false);
     DOCTEST_PARSE_AS_BOOL_OR_FLAG("no-line-numbers", "nln", no_line_numbers, false);
     DOCTEST_PARSE_AS_BOOL_OR_FLAG("no-debug-output", "ndo", no_debug_output, false);
     DOCTEST_PARSE_AS_BOOL_OR_FLAG("no-skipped-summary", "nss", no_skipped_summary, false);

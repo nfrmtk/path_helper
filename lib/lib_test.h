@@ -12,11 +12,7 @@
 #include <cassert>
 #include <map>
 #include <windows.h>
-
-
 class path_helper{
-    using path = std::filesystem::path;
-
 private:
     template <typename T>
     using vector_iterator_t = typename std::vector<T>::iterator;
@@ -24,42 +20,31 @@ private:
     template <typename K, typename V>
     using map_iterator_t = typename std::map<K,V>::iterator;
 
+    using path_t = std::filesystem::path;
     using version = std::string;
     using info_type =
           std::pair<
-                    vector_iterator_t<path>,
+                    vector_iterator_t<path_t>,
                     version
                    >;
 
     using info_vector =
             std::vector<info_type>;
-//    struct info_vector_wrapper{
-//        path_helper::info_vector data_;
-//        void push_back(const auto & )
-//        explicit info_vector_wrapper(const std::vector<vector_iterator_t<path>>& iters){
-//            for (const auto & iter : iters ){
-//                data_.emplace_back(iter, "");
-//            }
-//        }
-//        void fill(){
-//
-//        }
-//    };
-    std::vector<path> path_parsed;
+    std::vector<path_t> path_parsed;
     std::vector<bool> is_folder_checked;
-    std::map<path, info_vector> files;
+    std::map<path_t, info_vector> files;
 public:
     path_helper();
     void check_all_folders();
 
-    std::pair<size_t, int8_t> check_specific_folder(const path & folder);
+    std::pair<size_t, int8_t> check_specific_folder(const path_t & folder);
 
-    bool is_folder_in_path(const path& folder);
+    bool is_folder_in_path(const path_t& folder);
 
-    auto paths_to_program(const path& program);
+    auto paths_to_program(const path_t& program);
 private:
-    void get_versions(map_iterator_t<path, info_vector>& executable );
-    static bool if_executable(const path& file);
+    void get_versions(map_iterator_t<path_t, info_vector>& executable );
+    static bool if_executable(const path_t& file);
 };
 
 struct report{

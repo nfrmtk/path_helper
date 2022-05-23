@@ -33,7 +33,7 @@ void path_helper::check_all_folders() {
     }
 }
 
-std::pair<size_t, int8_t> path_helper::check_specific_folder(const path& folder) {
+std::pair<size_t, int8_t> path_helper::check_specific_folder(const path_t& folder) {
     auto path_iterator = std::find(path_parsed.begin(), path_parsed.end(),folder);
 
     std::pair<size_t, int8_t> ans{0, 0};
@@ -58,7 +58,7 @@ std::pair<size_t, int8_t> path_helper::check_specific_folder(const path& folder)
         if ( path_helper::if_executable(entry))
         {
             if (path_iterator != path_parsed.end())
-                files[entry].data_.push_back({path_iterator, ""});
+                files[entry].push_back({path_iterator, ""});
             ++ans.first;
         }
     }
@@ -66,25 +66,27 @@ std::pair<size_t, int8_t> path_helper::check_specific_folder(const path& folder)
     return ans;
 }
 
-bool path_helper::if_executable(const path_helper::path &file) {
+bool path_helper::if_executable(const path_helper::path_t &file) {
     return file.has_extension() && file.extension() == ".exe" || file.extension() == ".bat";
 }
 
 /// returns dereferenced iterators to given target
-auto path_helper::paths_to_program(const path & executable) {
+auto path_helper::paths_to_program(const path_t & executable) {
     auto iters = files[executable];
-    std::vector< std::pair<path, version> > ans(iters.size());
-    std::transform(iters.begin(), iters.end(), ans.begin(), [] (auto it) -> std::pair<path, version> {return {*it.first, it.second};});
+    std::vector< std::pair<path_t, version> > ans(iters.size());
+    std::transform(iters.begin(), iters.end(), ans.begin(), [] (auto it) -> std::pair<path_t, version> {return {*it.first, it.second};});
     return ans; // TODO: nothing is working
 }
 
-bool path_helper::is_folder_in_path( const path& folder) {
+bool path_helper::is_folder_in_path( const path_t& folder) {
     return (std::find(path_parsed.begin(), path_parsed.end(), folder) != path_parsed.end());
 }
 
-void path_helper::get_versions( map_iterator_t<path, info_vector> &executable) {
+void path_helper::get_versions( map_iterator_t<path_t, info_vector> &executable) {
     auto node = *executable;
     auto info = node.second;
+
+
     CString cmd = "cmd.exe";
     CString action = "open";
     std::string Sparams = "/k "; // command to write all
@@ -92,8 +94,17 @@ void path_helper::get_versions( map_iterator_t<path, info_vector> &executable) {
         Sparams.append(node.first.string() + " --version > d.txt && ");
     }
     CString params = Sparams.substr(0, Sparams.size() - 3).data();
+
     auto x = ShellExecute(NULL, action, cmd, params, NULL, SW_HIDE);
 
+    std::fstream data;
+    data.open("d.txt", std::ios::in);
+    std::string data_str, temp;
+    while (std::getline(data, temp)){
+        data_str.append(temp.append("\n"));
+    }
+    data.close();
+    std::filesystem::remove("./d.txt");
 
 }
 
