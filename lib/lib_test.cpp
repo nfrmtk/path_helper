@@ -58,7 +58,7 @@ std::pair<size_t, int8_t> path_helper::check_specific_folder(const path& folder)
         if ( path_helper::if_executable(entry))
         {
             if (path_iterator != path_parsed.end())
-                files[entry].push_back(path_iterator);
+                files[entry].data_.push_back({path_iterator, ""});
             ++ans.first;
         }
     }
@@ -66,34 +66,37 @@ std::pair<size_t, int8_t> path_helper::check_specific_folder(const path& folder)
     return ans;
 }
 
-void* path_helper::check_for_specific_program(const path_helper::path &executable) {
-    throw std::logic_error("not implemented");
-    return nullptr;
-}
-
 bool path_helper::if_executable(const path_helper::path &file) {
     return file.has_extension() && file.extension() == ".exe" || file.extension() == ".bat";
 }
 
-std::vector<path_helper::path> path_helper::paths_to_program(const path_helper::path & executable) {
+/// returns dereferenced iterators to given target
+auto path_helper::paths_to_program(const path & executable) {
     auto iters = files[executable];
-    std::vector<std::filesystem::path> ans(iters.size());
-    std::transform(iters.begin(), iters.end(), ans.begin(), [] (auto it){return *it;});
-    return ans;
+    std::vector< std::pair<path, version> > ans(iters.size());
+    std::transform(iters.begin(), iters.end(), ans.begin(), [] (auto it) -> std::pair<path, version> {return {*it.first, it.second};});
+    return ans; // TODO: nothing is working
 }
 
 bool path_helper::is_folder_in_path( const path& folder) {
     return (std::find(path_parsed.begin(), path_parsed.end(), folder) != path_parsed.end());
 }
 
-std::string path_helper::get_version(const std::map<path, iterator_vector>::iterator& executable) {
-    const LPCSTR command = "cmd.exe";
-    const LPCSTR action = "open";
+void path_helper::get_versions( map_iterator_t<path, info_vector> &executable) {
+    auto node = *executable;
+    auto info = node.second;
+    CString cmd = "cmd.exe";
+    CString action = "open";
+    std::string Sparams = "/k "; // command to write all
+    for (auto& pair : info ){
+        Sparams.append(node.first.string() + " --version > d.txt && ");
+    }
+    CString params = Sparams.substr(0, Sparams.size() - 3).data();
+    auto x = ShellExecute(NULL, action, cmd, params, NULL, SW_HIDE);
 
 
-
-    const LPCSTR params =
 }
+
 
 
 

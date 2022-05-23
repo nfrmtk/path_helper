@@ -5,34 +5,60 @@
 #ifndef PATH_HELPER_LIB_TEST_H
 #define PATH_HELPER_LIB_TEST_H
 #include <filesystem>
-#include <windows.h>
 #include <string>
 #include <atlstr.h>
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
 #include <map>
+#include <windows.h>
+
+
 class path_helper{
     using path = std::filesystem::path;
 
 private:
-    using iterator_vector = std::vector<std::vector<path>::iterator>;
+    template <typename T>
+    using vector_iterator_t = typename std::vector<T>::iterator;
+
+    template <typename K, typename V>
+    using map_iterator_t = typename std::map<K,V>::iterator;
+
+    using version = std::string;
+    using info_type =
+          std::pair<
+                    vector_iterator_t<path>,
+                    version
+                   >;
+
+    using info_vector =
+            std::vector<info_type>;
+//    struct info_vector_wrapper{
+//        path_helper::info_vector data_;
+//        void push_back(const auto & )
+//        explicit info_vector_wrapper(const std::vector<vector_iterator_t<path>>& iters){
+//            for (const auto & iter : iters ){
+//                data_.emplace_back(iter, "");
+//            }
+//        }
+//        void fill(){
+//
+//        }
+//    };
     std::vector<path> path_parsed;
     std::vector<bool> is_folder_checked;
-    std::map<path, iterator_vector> files;
+    std::map<path, info_vector> files;
 public:
     path_helper();
     void check_all_folders();
 
     std::pair<size_t, int8_t> check_specific_folder(const path & folder);
 
-    void* /* TODO: avoid type deduction */ check_for_specific_program (const path& executable);
-
     bool is_folder_in_path(const path& folder);
 
-    std::vector<path> paths_to_program(const path& program);
+    auto paths_to_program(const path& program);
 private:
-    static std::string get_version(const std::map<path, iterator_vector>::iterator& executable);
+    void get_versions(map_iterator_t<path, info_vector>& executable );
     static bool if_executable(const path& file);
 };
 
