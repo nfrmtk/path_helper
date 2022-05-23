@@ -58,7 +58,7 @@ std::pair<size_t, int8_t> path_helper::check_specific_folder(const path& folder)
         if ( path_helper::if_executable(entry))
         {
             if (path_iterator != path_parsed.end())
-                files[entry].add(path_iterator);
+                files[entry].push_back(path_iterator);
             ++ans.first;
         }
     }
@@ -76,7 +76,7 @@ bool path_helper::if_executable(const path_helper::path &file) {
 }
 
 std::vector<path_helper::path> path_helper::paths_to_program(const path_helper::path & executable) {
-    auto iters = files[executable].paths;
+    auto iters = files[executable];
     std::vector<std::filesystem::path> ans(iters.size());
     std::transform(iters.begin(), iters.end(), ans.begin(), [] (auto it){return *it;});
     return ans;
@@ -84,6 +84,15 @@ std::vector<path_helper::path> path_helper::paths_to_program(const path_helper::
 
 bool path_helper::is_folder_in_path( const path& folder) {
     return (std::find(path_parsed.begin(), path_parsed.end(), folder) != path_parsed.end());
+}
+
+std::string path_helper::get_version(const std::map<path, iterator_vector>::iterator& executable) {
+    const LPCSTR command = "cmd.exe";
+    const LPCSTR action = "open";
+
+
+
+    const LPCSTR params =
 }
 
 

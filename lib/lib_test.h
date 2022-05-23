@@ -5,6 +5,10 @@
 #ifndef PATH_HELPER_LIB_TEST_H
 #define PATH_HELPER_LIB_TEST_H
 #include <filesystem>
+#include <windows.h>
+#include <string>
+#include <atlstr.h>
+#include <fstream>
 #include <cstdlib>
 #include <cassert>
 #include <map>
@@ -12,19 +16,10 @@ class path_helper{
     using path = std::filesystem::path;
 
 private:
-    struct file_info{
-        using iterator_vector = std::vector<std::vector<path>::iterator>;
-        size_t counter = 0;
-        iterator_vector paths;
-        file_info& add(const std::vector<path>::iterator & other){
-            counter++;
-            paths.push_back(other);
-            return *this;
-        }
-    };
+    using iterator_vector = std::vector<std::vector<path>::iterator>;
     std::vector<path> path_parsed;
     std::vector<bool> is_folder_checked;
-    std::map<path, file_info> files;
+    std::map<path, iterator_vector> files;
 public:
     path_helper();
     void check_all_folders();
@@ -37,6 +32,7 @@ public:
 
     std::vector<path> paths_to_program(const path& program);
 private:
+    static std::string get_version(const std::map<path, iterator_vector>::iterator& executable);
     static bool if_executable(const path& file);
 };
 
