@@ -9,7 +9,6 @@
 
 #include <doctest/doctest.h>
 TEST_CASE("folder_check"){
-
     path_helper p;
     auto qp = std::filesystem::current_path();
     auto res = p.check_specific_folder(qp);

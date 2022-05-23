@@ -41,7 +41,6 @@ private:
 };
 
 struct report{
-
 };
 
 #endif //PATH_HELPER_LIB_TEST_H
