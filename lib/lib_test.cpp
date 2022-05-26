@@ -82,30 +82,37 @@ bool path_helper::is_folder_in_path( const path_t& folder) {
     return (std::find(path_parsed.begin(), path_parsed.end(), folder) != path_parsed.end());
 }
 
-void path_helper::get_versions( map_iterator_t<path_t, info_vector> &executable) {
+void path_helper::get_versions( map_iterator_t &executable) {
+    std::string unparsed_data = get_unparsed_version(executable);
+}
+
+
+
+bool path_helper::is_number(char letter) {
+    return letter >= '0' && letter <= '9';
+}
+
+std::string path_helper::get_unparsed_version(const map_iterator_t& executable ) {
     auto node = *executable;
     auto info = node.second;
 
 
     CString cmd = "cmd.exe";
     CString action = "open";
+
     std::string Sparams = "/k "; // command to write all
     for (auto& pair : info ){
-        Sparams.append(node.first.string() + " --version > d.txt && ");
+        Sparams.append(node.first.string() + " --version >> d.txt && ");
     }
     CString params = Sparams.substr(0, Sparams.size() - 3).data();
-
-    auto x = ShellExecute(NULL, action, cmd, params, NULL, SW_HIDE);
-
-    std::fstream data;
-    data.open("d.txt", std::ios::in);
-    std::string data_str, temp;
-    while (std::getline(data, temp)){
-        data_str.append(temp.append("\n"));
+    auto x = ShellExecute(NULL, action, cmd, params,
+                          NULL, SW_HIDE);
+    std::fstream fs("./d.txt", std::ios_base::in);
+    std::string final_data, lines;
+    while (std::getline(fs, lines)){
+        final_data.append(lines.append("\n"));
     }
-    data.close();
-    std::filesystem::remove("./d.txt");
-
+    return final_data;
 }
 
 

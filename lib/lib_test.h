@@ -11,14 +11,15 @@
 #include <cstdlib>
 #include <cassert>
 #include <map>
+#include <unordered_map>
 #include <windows.h>
+
+
 class path_helper{
 private:
     template <typename T>
     using vector_iterator_t = typename std::vector<T>::iterator;
 
-    template <typename K, typename V>
-    using map_iterator_t = typename std::map<K,V>::iterator;
 
     using path_t = std::filesystem::path;
     using version = std::string;
@@ -33,6 +34,8 @@ private:
     std::vector<path_t> path_parsed;
     std::vector<bool> is_folder_checked;
     std::map<path_t, info_vector> files;
+    using map_iterator_t = std::map<path_t, info_vector>::iterator;
+
 public:
     path_helper();
     void check_all_folders();
@@ -43,8 +46,10 @@ public:
 
     auto paths_to_program(const path_t& program);
 private:
-    void get_versions(map_iterator_t<path_t, info_vector>& executable );
+    void get_versions(map_iterator_t& executable );
+    std::string get_unparsed_version(const map_iterator_t& executable);
     static bool if_executable(const path_t& file);
+    static bool is_number(char letter);
 };
 
 struct report{
