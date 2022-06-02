@@ -25,5 +25,7 @@ TEST_CASE("system_check"){
     CHECK(p.paths_to_program("g++.exe").size());
 }
 
-
-
+TEST_CASE("inner_methods_tests"){
+    path_helper p;
+    
+}

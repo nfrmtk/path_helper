@@ -71,10 +71,14 @@ bool path_helper::if_executable(const path_helper::path_t &file) {
 }
 
 /// returns dereferenced iterators to given target
-auto path_helper::paths_to_program(const path_t & executable) {
-    auto iters = files[executable];
+auto path_helper::paths_to_program(const path_t & executable) -> std::vector< std::pair<path_t, version> > {
+    auto node = files.find(executable);
+    set_versions(node);
+
+    auto iters = node->second;
     std::vector< std::pair<path_t, version> > ans(iters.size());
-    std::transform(iters.begin(), iters.end(), ans.begin(), [] (auto it) -> std::pair<path_t, version> {return {*it.first, it.second};});
+    std::transform(iters.begin(), iters.end(), ans.begin(),
+                   [] (auto it) -> std::pair<path_t, version> {return {*it.first, it.second};}); // dereferencing iters here
     return ans; // TODO: nothing is working
 }
 
@@ -82,8 +86,12 @@ bool path_helper::is_folder_in_path( const path_t& folder) {
     return (std::find(path_parsed.begin(), path_parsed.end(), folder) != path_parsed.end());
 }
 
-void path_helper::get_versions( map_iterator_t &executable) {
-    std::string unparsed_data = get_unparsed_version(executable);
+void path_helper::set_versions(map_iterator_t &executable) {
+    std::vector<std::string> unparsed_data = get_unparsed_version(executable);
+    auto version_it = executable->second.begin();
+    for (const std::string& str: unparsed_data){
+        version_it->second = get_version(str);
+    }
 }
 
 
@@ -92,7 +100,7 @@ bool path_helper::is_number(char letter) {
     return letter >= '0' && letter <= '9';
 }
 
-std::string path_helper::get_unparsed_version(const map_iterator_t& executable ) {
+std::vector<std::string> path_helper::get_unparsed_version(const map_iterator_t& executable ) {
     auto node = *executable;
     auto info = node.second;
 
@@ -102,18 +110,28 @@ std::string path_helper::get_unparsed_version(const map_iterator_t& executable )
 
     std::string Sparams = "/k "; // command to write all
     for (auto& pair : info ){
-        Sparams.append(node.first.string() + " --version >> d.txt && ");
+        Sparams.append(node.first.string() + " --version >> d.txt && echo newline >> d.txt && ");
     }
     CString params = Sparams.substr(0, Sparams.size() - 3).data();
     auto x = ShellExecute(NULL, action, cmd, params,
                           NULL, SW_HIDE);
     std::fstream fs("./d.txt", std::ios_base::in);
-    std::string final_data, lines;
+    std::string lines;
+    std::vector<std::string> final_data;
+    auto it = final_data.begin();
     while (std::getline(fs, lines)){
-        final_data.append(lines.append("\n"));
+        it->append(lines.append("\n"));
+        if (lines.find("newliine") != -1){
+            ++it;
+        }
     }
     return final_data;
 }
+
+auto path_helper::get_version(const std::string &) -> version {
+
+}
+
 
 
 
