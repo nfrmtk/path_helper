@@ -22,63 +22,56 @@ path_helper::path_helper() {
     size_t new_size = std::distance( path_parsed.begin(), std::unique(path_parsed.begin(), path_parsed.end()));
     path_parsed.resize(new_size);
     is_folder_checked = std::vector<bool>(path_parsed.size(), false);
+    check_all_folders();
 }
 
 
 void path_helper::check_all_folders() {
     for (size_t i = 0; i < path_parsed.size(); ++i){
         if (!is_folder_checked[i]){
-            auto pair = check_specific_folder(path_parsed[i]);
+            check_specific_folder(path_parsed[i]);
         }
     }
 }
 
-std::pair<size_t, int8_t> path_helper::check_specific_folder(const path_t& folder) {
+void path_helper::check_specific_folder(const path_t& folder) {
     auto path_iterator = std::find(path_parsed.begin(), path_parsed.end(),folder);
 
-    std::pair<size_t, int8_t> ans{0, 0};
     if (path_iterator != path_parsed.end()) {
-        ans.second = 1; // stands for OK
         is_folder_checked[path_iterator - path_parsed.begin()] = true;
-    }else {
-        ans.second = -1; // stands for OK, BUT
     }
     std::filesystem::directory_iterator it;
     try{
        it = std::filesystem::directory_iterator(folder);
     }
-    catch(const std::filesystem::filesystem_error& err){
-        ans.second = -2; // stands for BAD
-        ans.first = 0;
-        return ans;
-    }
+    catch(const std::filesystem::filesystem_error& err){}
 
     for (;it != std::filesystem::directory_iterator(); ++it){
-        const auto& entry = it->path().filename(); // e.g. A.cpp
-        if ( path_helper::if_executable(entry))
+        const path_t & entry = it->path().filename(); // e.g. A.cpp
+        if ( if_executable(entry))
         {
             if (path_iterator != path_parsed.end())
-                files[entry].push_back({path_iterator, ""});
-            ++ans.first;
+                files[entry].push_back({path_iterator, std::nullopt});
         }
     }
-
-    return ans;
 }
 
 bool path_helper::if_executable(const path_helper::path_t &file) {
     return file.has_extension() && file.extension() == ".exe" || file.extension() == ".bat";
 }
 
-/// returns dereferenced iterators to given target
-auto path_helper::paths_to_program(const path_t & executable) -> std::vector< std::pair<path_t, version> > {
-    auto node = files.find(executable);
+//!
+//! \param executable
+//! \return completed vector of information about \p executable
+
+auto path_helper::paths_to_program(const path_t & executable) -> derefenced_info_vector {
+
+    auto node = files.find(executable.filename());
     set_versions(node);
 
     auto iters = node->second;
     std::vector< std::pair<path_t, version> > ans(iters.size());
-    std::transform(iters.begin(), iters.end(), ans.begin(),
-                   [] (auto it) -> std::pair<path_t, version> {return {*it.first, it.second};}); // dereferencing iters here
+    std::transform(iters.begin(), iters.end(), ans.begin(), dereference_info);
     return ans; // TODO: nothing is working
 }
 
@@ -88,9 +81,18 @@ bool path_helper::is_folder_in_path( const path_t& folder) {
 
 void path_helper::set_versions(map_iterator_t &executable) {
     std::vector<std::string> unparsed_data = get_unparsed_version(executable);
-    auto version_it = executable->second.begin();
+    assert(unparsed_data.size() == executable->second.size());
+    auto info_vector_it = executable->second.begin();
     for (const std::string& str: unparsed_data){
-        version_it->second = get_version(str);
+        auto version_v  = get_version(str);
+
+        std::string filename = executable->first.string();
+        std::string path_with_filename = info_vector_it->first->append(filename).string();
+        std::string not_found_response = std::string("couldn't get version of ").append(path_with_filename);
+
+        info_vector_it->second = version_v.has_value() ? *version_v : not_found_response;
+
+        ++info_vector_it;
     }
 }
 
@@ -121,15 +123,27 @@ std::vector<std::string> path_helper::get_unparsed_version(const map_iterator_t&
     auto it = final_data.begin();
     while (std::getline(fs, lines)){
         it->append(lines.append("\n"));
-        if (lines.find("newliine") != -1){
+        if (lines.find("newline") != -1){ // newline from 122 line
             ++it;
         }
     }
     return final_data;
 }
 
-auto path_helper::get_version(const std::string &) -> version {
+auto path_helper::get_version(const std::string & unparsed_version) -> std::optional<version> {
 
+    std::regex reg("([0-9]+\\.){1,5}([0-9]+)"); // version filter
+
+    std::cmatch match;
+
+    bool b = std::regex_search(unparsed_version.c_str(), match, reg);
+
+    return b ? std::make_optional(std::string(*match.begin()))
+             : std::nullopt;
+    // TODO: solution is far from perfect
+}
+auto path_helper::dereference_info(const path_helper::info_type& info) -> std::pair<path_t, version> {
+    return {*info.first, info.second.has_value() ? info.second.value() : "version not found"};
 }
 
 
