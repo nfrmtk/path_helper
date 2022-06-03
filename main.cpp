@@ -6,7 +6,6 @@
 #include <argparse/argparse.hpp>
 int main(int argc, char* argv[] ){
     path_helper p;
-    p.check_all_folders();
     argparse::ArgumentParser ap("path_helper", "0.1");
     ap.add_argument("").remaining();
     ap.add_description("searches in PATH for files provided");
@@ -25,7 +24,7 @@ int main(int argc, char* argv[] ){
             if (paths.size()){
                 std::cout << file << " is mentioned here:\n";
                 for (const auto& path : paths){
-                    std::cout << path.string() << "\n";
+                    std::cout << path.first.string() << "     " << path.second <<"\n";
                 }
             }
             else{

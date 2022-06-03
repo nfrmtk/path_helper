@@ -20,7 +20,6 @@ private:
     friend void _DOCTEST_ANON_FUNC_12(); // for testing purposes
     using path_t = std::filesystem::path;
     std::vector<path_t> path_parsed;
-    std::vector<bool> is_folder_checked;
 
     using vector_iterator_t = std::vector<path_t>::iterator;
     using version = std::string;
@@ -47,7 +46,7 @@ public:
 
     derefenced_info_vector paths_to_program(const path_t& program);
 private:
-    std::optional<version> get_version(const std::string& unparsed_version);
+    static std::optional<version> get_version(const std::string& unparsed_version);
 
     void set_versions(map_iterator_t& executable );
 
@@ -55,7 +54,7 @@ private:
 
     void check_specific_folder(const path_t & folder);
 
-    std::vector<std::string> get_unparsed_version(const map_iterator_t& executable);
+    static std::vector<std::string> get_unparsed_version(const map_iterator_t& executable);
 
     static bool if_executable(const path_t& file);
 

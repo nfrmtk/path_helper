@@ -21,25 +21,19 @@ path_helper::path_helper() {
     //deleting similar consequent elements
     size_t new_size = std::distance( path_parsed.begin(), std::unique(path_parsed.begin(), path_parsed.end()));
     path_parsed.resize(new_size);
-    is_folder_checked = std::vector<bool>(path_parsed.size(), false);
     check_all_folders();
 }
 
 
 void path_helper::check_all_folders() {
     for (size_t i = 0; i < path_parsed.size(); ++i){
-        if (!is_folder_checked[i]){
-            check_specific_folder(path_parsed[i]);
-        }
+        check_specific_folder(path_parsed[i]);
     }
 }
 
 void path_helper::check_specific_folder(const path_t& folder) {
     auto path_iterator = std::find(path_parsed.begin(), path_parsed.end(),folder);
 
-    if (path_iterator != path_parsed.end()) {
-        is_folder_checked[path_iterator - path_parsed.begin()] = true;
-    }
     std::filesystem::directory_iterator it;
     try{
        it = std::filesystem::directory_iterator(folder);
@@ -75,10 +69,6 @@ auto path_helper::paths_to_program(const path_t & executable) -> derefenced_info
     return ans; // TODO: nothing is working
 }
 
-bool path_helper::is_folder_in_path( const path_t& folder) {
-    return (std::find(path_parsed.begin(), path_parsed.end(), folder) != path_parsed.end());
-}
-
 void path_helper::set_versions(map_iterator_t &executable) {
     std::vector<std::string> unparsed_data = get_unparsed_version(executable);
     assert(unparsed_data.size() == executable->second.size());
@@ -96,16 +86,11 @@ void path_helper::set_versions(map_iterator_t &executable) {
     }
 }
 
-
-
-bool path_helper::is_number(char letter) {
-    return letter >= '0' && letter <= '9';
-}
-
 std::vector<std::string> path_helper::get_unparsed_version(const map_iterator_t& executable ) {
     auto node = *executable;
     auto info = node.second;
-
+    LPCSTR file = "./d.txt"; // just in case it is opened already. will delete it in future.
+    DeleteFileA(file);
 
     CString cmd = "cmd.exe";
     CString action = "open";
@@ -120,15 +105,18 @@ std::vector<std::string> path_helper::get_unparsed_version(const map_iterator_t&
     std::fstream fs("./d.txt", std::ios_base::in);
     std::string lines;
     std::vector<std::string> final_data;
-    auto it = final_data.begin();
+    std::string temp = "";
     while (std::getline(fs, lines)){
-        it->append(lines.append("\n"));
+        temp.append(lines.append("\n"));
         if (lines.find("newline") != -1){ // newline from 122 line
-            ++it;
+            final_data.push_back(temp);
+            temp.clear();
         }
     }
+    DeleteFileA(file);
     return final_data;
 }
+
 
 auto path_helper::get_version(const std::string & unparsed_version) -> std::optional<version> {
 
@@ -138,12 +126,25 @@ auto path_helper::get_version(const std::string & unparsed_version) -> std::opti
 
     bool b = std::regex_search(unparsed_version.c_str(), match, reg);
 
-    return b ? std::make_optional(std::string(*match.begin()))
+    return b ? std::make_optional(match.begin()->str())
              : std::nullopt;
     // TODO: solution is far from perfect
 }
+
+
+
 auto path_helper::dereference_info(const path_helper::info_type& info) -> std::pair<path_t, version> {
     return {*info.first, info.second.has_value() ? info.second.value() : "version not found"};
+}
+
+
+bool path_helper::is_folder_in_path( const path_t& folder) {
+    return (std::find(path_parsed.begin(), path_parsed.end(), folder) != path_parsed.end());
+}
+
+
+bool path_helper::is_number(char letter) {
+    return letter >= '0' && letter <= '9';
 }
 
 
