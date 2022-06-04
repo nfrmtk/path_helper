@@ -89,7 +89,7 @@ void path_helper::set_versions(map_iterator_t &executable) {
 std::vector<std::string> path_helper::get_unparsed_version(const map_iterator_t& executable ) {
     auto node = *executable;
     auto info = node.second;
-    LPCSTR file = "./d.txt"; // just in case it is opened already. will delete it in future.
+    LPCSTR file = "./d.txt"; // just in case it is opened already. will open it in future.
     DeleteFileA(file);
 
     CString cmd = "cmd.exe";
@@ -102,14 +102,14 @@ std::vector<std::string> path_helper::get_unparsed_version(const map_iterator_t&
     CString params = Sparams.substr(0, Sparams.size() - 3).data();
     auto x = ShellExecute(NULL, action, cmd, params,
                           NULL, SW_HIDE);
-    std::fstream fs("./d.txt", std::ios_base::in);
+    std::ifstream fs("./d.txt.");
     std::string lines;
     std::vector<std::string> final_data;
     std::string temp = "";
-    while (std::getline(fs, lines)){
-        temp.append(lines.append("\n"));
-        if (lines.find("newline") != -1){ // newline from 122 line
-            final_data.push_back(temp);
+    for (std::string temp;std::getline(fs, temp);){
+        lines.append(temp.append("\n"));
+        if (temp.find("newline") != -1){ // newline from 122 line
+            final_data.push_back(lines);
             temp.clear();
         }
     }
@@ -117,7 +117,7 @@ std::vector<std::string> path_helper::get_unparsed_version(const map_iterator_t&
     return final_data;
 }
 
-
+    std::regex reg("");
 auto path_helper::get_version(const std::string & unparsed_version) -> std::optional<version> {
 
     std::regex reg("([0-9]+\\.){1,5}([0-9]+)"); // version filter
