@@ -70,7 +70,7 @@ auto path_helper::paths_to_program(const path_t & executable) -> derefenced_info
 }
 
 void path_helper::set_versions(map_iterator_t &executable) {
-    std::vector<std::string> unparsed_data = get_unparsed_version(executable);
+    std::vector<std::string> unparsed_data = get_unparsed_versions(executable);
     assert(unparsed_data.size() == executable->second.size());
     auto info_vector_it = executable->second.begin();
     for (const std::string& str: unparsed_data){
@@ -86,11 +86,11 @@ void path_helper::set_versions(map_iterator_t &executable) {
     }
 }
 
-std::vector<std::string> path_helper::get_unparsed_version(const map_iterator_t& executable ) {
+std::vector<std::string> path_helper::get_unparsed_versions(const map_iterator_t& executable ) {
     auto node = *executable;
     auto info = node.second;
     LPCSTR file = "./d.txt"; // just in case it is opened already. will open it in future.
-    DeleteFileA(file);
+//    DeleteFileA(file);
 
     CString cmd = "cmd.exe";
     CString action = "open";
@@ -100,24 +100,25 @@ std::vector<std::string> path_helper::get_unparsed_version(const map_iterator_t&
         Sparams.append(node.first.string() + " --version >> d.txt && echo newline >> d.txt && ");
     }
     CString params = Sparams.substr(0, Sparams.size() - 3).data();
-    auto x = ShellExecute(NULL, action, cmd, params,
-                          NULL, SW_HIDE);
-    std::ifstream fs("./d.txt.");
+//    auto x = ShellExecute(NULL, action, cmd, params,
+//                          NULL, SW_HIDE);
+    std::ifstream fs(file);
     std::string lines;
     std::vector<std::string> final_data;
-    std::string temp = "";
-    for (std::string temp;std::getline(fs, temp);){
+    std::string temp;
+    std::getline(fs, temp);
+    lines.append(temp.append("\n"));
+    while(std::getline(fs, temp)){
         lines.append(temp.append("\n"));
         if (temp.find("newline") != -1){ // newline from 122 line
             final_data.push_back(lines);
-            temp.clear();
+            lines.clear();
         }
     }
     DeleteFileA(file);
     return final_data;
 }
 
-    std::regex reg("");
 auto path_helper::get_version(const std::string & unparsed_version) -> std::optional<version> {
 
     std::regex reg("([0-9]+\\.){1,5}([0-9]+)"); // version filter

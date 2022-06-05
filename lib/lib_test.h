@@ -54,7 +54,7 @@ private:
 
     void check_specific_folder(const path_t & folder);
 
-    static std::vector<std::string> get_unparsed_version(const map_iterator_t& executable);
+    static std::vector<std::string> get_unparsed_versions(const map_iterator_t& executable);
 
     static bool if_executable(const path_t& file);
 

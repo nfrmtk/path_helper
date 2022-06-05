@@ -14,6 +14,7 @@ TEST_CASE("bin.dbg_folder_check") {
     CHECK(p.is_folder_in_path(qp));
     CHECK_EQ(p.paths_to_program("doctest.exe").size(), 1);
 }
+
 TEST_CASE("system_check"){
     path_helper p;
     CHECK(p.paths_to_program("g++.exe").size());
@@ -21,5 +22,4 @@ TEST_CASE("system_check"){
 
 TEST_CASE("inner_methods_tests"){
     path_helper p;
-    
 }
