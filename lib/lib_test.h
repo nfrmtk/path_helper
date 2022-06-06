@@ -43,7 +43,7 @@ struct path_helper{
 
     bool is_folder_in_path(const path_t& folder);
 
-    derefenced_info_vector program_info(const path_t& program);
+    std::optional<derefenced_info_vector> program_info(const path_t& program);
 
     static std::optional<version> get_version(const std::string& unparsed_version);
 

@@ -58,11 +58,13 @@ bool path_helper::if_executable(const path_helper::path_t &file) {
 //! \param program
 //! \return completed vector of information about \p executable
 
-auto path_helper::program_info(const path_t & program) -> derefenced_info_vector {
+auto path_helper::program_info(const path_t & program) -> std::optional<derefenced_info_vector> {
 
     auto node = files.find(program.filename());
+    if (node == files.end()) {
+        return std::nullopt;
+    }
     set_versions(node);
-
     auto iters = node->second;
     std::vector< std::pair<path_t, version> > ans(iters.size());
     std::transform(iters.begin(), iters.end(), ans.begin(), dereference_info);
@@ -142,7 +144,7 @@ path_helper::path_t path_helper::write_versions_to_file(const map_iterator_t &ex
         string_params.append((*info.first / node.first).string() + " --version >> data.txt && echo newline >> data.txt && ");
     }
 
-    ShellExecuteA(NULL, LPCSTR("open"), LPCSTR("cmd.exe"), LPCSTR(string_params.substr(0, string_params.size() - 3).c_str()), NULL, SW_SHOW );
+    ShellExecuteA(NULL, LPCSTR("open"), LPCSTR("cmd.exe"), LPCSTR(string_params.substr(0, string_params.size() - 3).c_str()), NULL, SW_HIDE );
     std::string temp;
     std::ifstream is(data_file);
     while (!std::getline(is, temp)) {} // todo: avoid plain cycle. use something like
