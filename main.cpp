@@ -20,7 +20,7 @@ int main(int argc, char* argv[] ){
     try{
         auto files = ap.get<std::vector< std::string>>("");
         for (const auto& file : files){
-            auto paths = p.paths_to_program(file);
+            auto paths = p.program_info(file);
             if (paths.size()){
                 std::cout << file << " is mentioned here:\n";
                 for (const auto& path : paths){

@@ -15,9 +15,8 @@
 #include <windows.h>
 #include <regex>
 
-class path_helper{
-private:
-    friend void _DOCTEST_ANON_FUNC_12(); // for testing purposes
+
+struct path_helper{
     using path_t = std::filesystem::path;
     std::vector<path_t> path_parsed;
 
@@ -39,13 +38,13 @@ private:
 
     using map_iterator_t = std::map<path_t, info_vector>::iterator;
     std::map<path_t, info_vector> files;
-public:
+
     path_helper();
 
     bool is_folder_in_path(const path_t& folder);
 
-    derefenced_info_vector paths_to_program(const path_t& program);
-private:
+    derefenced_info_vector program_info(const path_t& program);
+
     static std::optional<version> get_version(const std::string& unparsed_version);
 
     void set_versions(map_iterator_t& executable );
@@ -54,13 +53,15 @@ private:
 
     void check_specific_folder(const path_t & folder);
 
-    static std::vector<std::string> get_unparsed_versions(const map_iterator_t& executable);
+    std::vector<std::string> get_unparsed_versions(const map_iterator_t& executable);
 
     static bool if_executable(const path_t& file);
 
     static derefenced_info_type dereference_info(const info_type& info);
 
-    static bool is_number(char letter);
+    path_t write_versions_to_file(const map_iterator_t & executable);
+
+    static std::vector<std::string> read_versions_from_file(const path_t& versions_data);
 };
 
 #endif //PATH_HELPER_LIB_TEST_H

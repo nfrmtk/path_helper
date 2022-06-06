@@ -55,12 +55,12 @@ bool path_helper::if_executable(const path_helper::path_t &file) {
 }
 
 //!
-//! \param executable
+//! \param program
 //! \return completed vector of information about \p executable
 
-auto path_helper::paths_to_program(const path_t & executable) -> derefenced_info_vector {
+auto path_helper::program_info(const path_t & program) -> derefenced_info_vector {
 
-    auto node = files.find(executable.filename());
+    auto node = files.find(program.filename());
     set_versions(node);
 
     auto iters = node->second;
@@ -87,36 +87,8 @@ void path_helper::set_versions(map_iterator_t &executable) {
 }
 
 std::vector<std::string> path_helper::get_unparsed_versions(const map_iterator_t& executable ) {
-    auto node = *executable;
-    auto info = node.second;
-    LPCSTR file = "./d.txt"; // just in case it is opened already. will open it in future.
-//    DeleteFileA(file);
-
-    CString cmd = "cmd.exe";
-    CString action = "open";
-
-    std::string Sparams = "/k "; // command to write all
-    for (auto& pair : info ){
-        Sparams.append(node.first.string() + " --version >> d.txt && echo newline >> d.txt && ");
-    }
-    CString params = Sparams.substr(0, Sparams.size() - 3).data();
-//    auto x = ShellExecute(NULL, action, cmd, params,
-//                          NULL, SW_HIDE);
-    std::ifstream fs(file);
-    std::string lines;
-    std::vector<std::string> final_data;
-    std::string temp;
-    std::getline(fs, temp);
-    lines.append(temp.append("\n"));
-    while(std::getline(fs, temp)){
-        lines.append(temp.append("\n"));
-        if (temp.find("newline") != -1){ // newline from 122 line
-            final_data.push_back(lines);
-            lines.clear();
-        }
-    }
-    DeleteFileA(file);
-    return final_data;
+    path_t data_file = write_versions_to_file(executable);
+    return read_versions_from_file(data_file);
 }
 
 auto path_helper::get_version(const std::string & unparsed_version) -> std::optional<version> {
@@ -129,7 +101,7 @@ auto path_helper::get_version(const std::string & unparsed_version) -> std::opti
 
     return b ? std::make_optional(match.begin()->str())
              : std::nullopt;
-    // TODO: solution is far from perfect
+    // TODO: match.begin() ???
 }
 
 
@@ -144,8 +116,37 @@ bool path_helper::is_folder_in_path( const path_t& folder) {
 }
 
 
-bool path_helper::is_number(char letter) {
-    return letter >= '0' && letter <= '9';
+
+std::vector<std::string> path_helper::read_versions_from_file(const path_helper::path_t &versions_data) {
+    std::ifstream data_file(versions_data);
+    std::vector<std::string> resulting_data;
+    std::string temp, single_version;
+
+    while (std::getline(data_file, temp)){
+        single_version.append(temp.append("\n"));
+        if (temp.find("newline") != -1){
+            resulting_data.push_back(single_version);
+            single_version.clear();
+        }
+    }
+    DeleteFileA(versions_data.string().c_str());
+    return resulting_data;
+}
+
+path_helper::path_t path_helper::write_versions_to_file(const map_iterator_t &executable) {
+    LPCSTR data_file = "data.txt";
+    std::string string_params = "/k ";
+    const auto node = *executable;
+
+    for (const info_type & info: node.second){
+        string_params.append((*info.first / node.first).string() + " --version >> data.txt && echo newline >> data.txt && ");
+    }
+
+    ShellExecuteA(NULL, LPCSTR("open"), LPCSTR("cmd.exe"), LPCSTR(string_params.substr(0, string_params.size() - 3).c_str()), NULL, SW_SHOW );
+    std::string temp;
+    std::ifstream is(data_file);
+    while (!std::getline(is, temp)) {} // todo: avoid plain cycle. use something like
+    return data_file;
 }
 
 

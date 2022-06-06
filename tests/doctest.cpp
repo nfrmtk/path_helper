@@ -8,18 +8,22 @@
 
 #include <doctest/doctest.h>
 
-TEST_CASE("bin.dbg_folder_check") {
-    path_helper p;
-    auto qp = std::filesystem::current_path();
-    CHECK(p.is_folder_in_path(qp));
-    CHECK_EQ(p.paths_to_program("doctest.exe").size(), 1);
+
+TEST_CASE("file read test")
+{
+    auto data = path_helper::read_versions_from_file("../example_data.txt");
+    CHECK_EQ(data.size(), 2);
 }
 
-TEST_CASE("system_check"){
-    path_helper p;
-    CHECK(p.paths_to_program("g++.exe").size());
-}
+TEST_CASE("file write test"){
+    path_helper ph;
+    auto node_cxx = ph.files.find("g++.exe");
+    if (node_cxx == ph.files.end()){
+        return;
+    }
 
-TEST_CASE("inner_methods_tests"){
-    path_helper p;
+    auto data = ph.get_unparsed_versions(node_cxx);
+    CHECK_EQ(data.size(), 1);
+
+
 }
