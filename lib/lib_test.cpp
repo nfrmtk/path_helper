@@ -118,6 +118,7 @@ std::vector<std::wstring> path_helper::read_versions_from_file(const path_helper
             single_version.clear();
         }
     }
+
     data_file.close();
     DeleteFileA(versions_data.filename().string().c_str());
     return resulting_data;
@@ -125,10 +126,12 @@ std::vector<std::wstring> path_helper::read_versions_from_file(const path_helper
 
 path_helper::path_t path_helper::write_versions_to_file(const map_iterator_t &executable) {
     LPCSTR data_file = "data.txt";
-    CreateFileA(data_file, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+    auto ret = CreateFileA(data_file, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+    WaitForSingleObject(ret, 1000);
     std::string string_params = "/k \"\"";
     uint8_t init_size = string_params.size();
     const auto node = *executable;
+    system("pause");
 
     for (const info_type & info: node.second){
         string_params.append((*info.first / node.first).string() + "\" --version >> data.txt && echo newline >> data.txt && \"");
@@ -150,5 +153,6 @@ auto path_helper::dereference_info(const path_helper::info_type& info) -> std::p
 bool path_helper::is_folder_in_path( const path_t& folder) {
     return (std::find(path_parsed.begin(), path_parsed.end(), folder) != path_parsed.end());
 }
+
 
 

@@ -14,7 +14,7 @@
 #include <unordered_map>
 #include <windows.h>
 #include <regex>
-
+#include <thread>
 
 struct path_helper{
     using path_t = std::filesystem::path;
