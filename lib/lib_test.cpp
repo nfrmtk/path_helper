@@ -41,17 +41,17 @@ void path_helper::check_specific_folder(const path_t& folder) {
     catch(const std::filesystem::filesystem_error& err){}
 
     for (;it != std::filesystem::directory_iterator(); ++it){
-        const path_t & entry = it->path().filename(); // e.g. A.cpp
+        const path_t & entry = it->path().filename(); // e.g. A, or gcc
         if ( if_executable(entry))
         {
             if (path_iterator != path_parsed.end())
-                files[entry].push_back({path_iterator, std::nullopt});
+                files[entry.stem()].push_back({path_iterator, std::nullopt});
         }
     }
 }
 
 bool path_helper::if_executable(const path_helper::path_t &file) {
-    return file.has_extension() && file.extension() == ".exe" || file.extension() == ".bat";
+    return file.has_extension() && file.extension() == ".exe" || file.extension() == ".bat" || file.extension() == ".cmd";
 }
 
 //!
@@ -119,18 +119,19 @@ std::vector<std::wstring> path_helper::read_versions_from_file(const path_helper
         }
     }
     data_file.close();
+    DeleteFileA(versions_data.filename().string().c_str());
     return resulting_data;
 }
 
 path_helper::path_t path_helper::write_versions_to_file(const map_iterator_t &executable) {
     LPCSTR data_file = "data.txt";
+    CreateFileA(data_file, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
     std::string string_params = "/k \"\"";
     uint8_t init_size = string_params.size();
     const auto node = *executable;
 
     for (const info_type & info: node.second){
-        string_params.size() != init_size ? string_params.append((*info.first / node.first).string() + "\" --version >> data.txt && echo newline >> data.txt && \"")
-                                          : string_params.append((*info.first / node.first).string() + "\" --version > data.txt && echo newline >> data.txt && \""); // rewrite everything in data.txt
+        string_params.append((*info.first / node.first).string() + "\" --version >> data.txt && echo newline >> data.txt && \"");
     }
     auto final_command = string_params.substr(0, string_params.size() - 4) + '\"';
     auto fc = final_command.c_str();
