@@ -45,7 +45,7 @@ struct path_helper{
 
     std::optional<derefenced_info_vector> program_info(const path_t& program);
 
-    static std::optional<version> get_version(const std::string& unparsed_version);
+    static std::optional<version> get_version(const std::wstring& unparsed_version);
 
     void set_versions(map_iterator_t& executable );
 
@@ -53,7 +53,7 @@ struct path_helper{
 
     void check_specific_folder(const path_t & folder);
 
-    std::vector<std::string> get_unparsed_versions(const map_iterator_t& executable);
+    std::vector<std::wstring> get_unparsed_versions(const map_iterator_t& executable);
 
     static bool if_executable(const path_t& file);
 
@@ -61,7 +61,7 @@ struct path_helper{
 
     path_t write_versions_to_file(const map_iterator_t & executable);
 
-    static std::vector<std::string> read_versions_from_file(const path_t& versions_data);
+    static std::vector<std::wstring> read_versions_from_file(const path_t& versions_data);
 };
 
 #endif //PATH_HELPER_LIB_TEST_H
