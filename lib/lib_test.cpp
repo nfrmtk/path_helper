@@ -131,20 +131,22 @@ path_helper::path_t path_helper::write_versions_to_file(const map_iterator_t &ex
     std::string string_params = "/k \"\"";
     uint8_t init_size = string_params.size();
     const auto node = *executable;
-    system("pause");
 
     for (const info_type & info: node.second){
         string_params.append((*info.first / node.first).string() + "\" --version >> data.txt && echo newline >> data.txt && \"");
     }
     auto final_command = string_params.substr(0, string_params.size() - 4) + '\"';
     auto fc = final_command.c_str();
-    ShellExecuteA(NULL, "open", "cmd.exe", (LPCSTR)fc, NULL, SW_SHOW );
+    HWND h = NULL;
+    ShellExecuteA(h, "open", "cmd.exe", (LPCSTR)fc, NULL, SW_HIDE );
+    WaitForSingleObject(h, 1000);
     std::string temp;
     std::ifstream is(data_file);
 
     while (!std::getline(is, temp)) {}
     return data_file;
 }
+
 auto path_helper::dereference_info(const path_helper::info_type& info) -> std::pair<path_t, version> {
     return {*info.first, info.second.has_value() ? info.second.value() : "version not found"};
 }
