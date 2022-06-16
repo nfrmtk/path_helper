@@ -4,6 +4,7 @@
 
 #ifndef PATH_HELPER_LIB_TEST_H
 #define PATH_HELPER_LIB_TEST_H
+
 #include <filesystem>
 #include <string>
 #include <atlstr.h>
@@ -12,7 +13,7 @@
 #include <cassert>
 #include <map>
 #include <unordered_map>
-#include <windows.h>
+#include <Windows.h>
 #include <regex>
 #include <thread>
 
@@ -36,14 +37,30 @@ struct path_helper{
             std::vector<info_type>;
     using derefenced_info_vector = std::vector<derefenced_info_type>;
 
-    using map_iterator_t = std::map<path_t, info_vector>::iterator;
     std::map<path_t, info_vector> files;
+
+    using map_iterator_t = std::map<path_t, info_vector>::iterator;
+
+    //! raii wrapper for file creation
+
+    struct data_file{
+        path_t file;
+        HANDLE handle;
+        data_file(const path_t& desired_path);
+        data_file& operator= (data_file&& other ) = delete;
+        data_file(data_file&& other) = delete;
+        data_file(const data_file&) = delete;
+        data_file& operator=(const data_file&) = delete;
+        ~data_file();
+    };
 
     path_helper();
 
     bool is_folder_in_path(const path_t& folder);
 
     std::optional<derefenced_info_vector> program_info(const path_t& program);
+private:
+    static std::vector<std::string> generate_commands(const map_iterator_t& executable);
 
     static std::optional<version> get_version(const std::wstring& unparsed_version);
 
@@ -57,11 +74,11 @@ struct path_helper{
 
     static bool if_executable(const path_t& file);
 
-    static derefenced_info_type dereference_info(const info_type& info);
+    static derefenced_info_type dereference_info(const info_type& info, const path_t& executable);
 
-    path_t write_versions_to_file(const map_iterator_t & executable);
+    static bool write_versions_to_file( data_file& file,  const map_iterator_t & executable);
 
-    static std::vector<std::wstring> read_versions_from_file(const path_t& versions_data);
+    static std::vector<std::wstring> read_versions_from_file(data_file& data);
 };
 
 #endif //PATH_HELPER_LIB_TEST_H
