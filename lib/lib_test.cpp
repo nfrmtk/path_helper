@@ -108,11 +108,9 @@ auto path_helper::get_version(const std::wstring & unparsed_version) -> std::opt
     std::match_results<const wchar_t*> match;
 
     bool b = std::regex_search(unparsed_version.c_str(), match, reg);
-
+    if (!b) return std::nullopt;
     std::wstring ans = match.begin()->str();
-
-    return b ? std::make_optional(std::string(ans.begin(), ans.end()))
-             : std::nullopt;
+    return std::make_optional(std::string(ans.begin(), ans.end()));
     // TODO: match.begin() ???
 }
 
@@ -172,7 +170,7 @@ bool path_helper::write_versions_to_file(data_file& file, const map_iterator_t &
 }
 
 auto path_helper::dereference_info(const path_helper::info_type& info, const path_t& executable) -> std::pair<path_t, version> {
-    return {(*info.first)/=executable, info.second.has_value() ? info.second.value() : "version not found"};
+    return {*(info.first)/executable, info.second.has_value() ? info.second.value() : "version not found"};
 }
 
 
