@@ -17,11 +17,12 @@
 #include <regex>
 #include <thread>
 
-struct path_helper{
+class path_helper{
+public:
     using path_t = std::filesystem::path;
     std::vector<path_t> path_parsed;
 
-    using vector_iterator_t = std::vector<path_t>::iterator;
+    using vector_iterator_t = std::vector<path_t>::const_iterator;
     using version = std::string;
     using info_type =
           std::pair<
@@ -41,8 +42,20 @@ struct path_helper{
 
     using map_iterator_t = std::map<path_t, info_vector>::iterator;
 
-    //! raii wrapper for file creation
 
+    //! \brief environment's PATH parsing is done here, path_parsed vector and files map are formed;
+    path_helper();
+
+    //! for every program in info_vector version is set
+    //! \param program
+    //! \return nullopt if program is not found
+    //! \return {path, version} vector if no critical error occured
+    //! \return version is unset "--version" option for corresponding path doesn't return a version
+    //! \throw runtime_error if critical error during getting versions to file occured
+    std::optional<derefenced_info_vector> program_info(const path_t& program);
+
+private:
+    //! raii wrapper for file creation
     struct data_file{
         path_t file;
         HANDLE handle;
@@ -53,13 +66,8 @@ struct path_helper{
         data_file& operator=(const data_file&) = delete;
         ~data_file();
     };
-
-    path_helper();
-
     bool is_folder_in_path(const path_t& folder);
 
-    std::optional<derefenced_info_vector> program_info(const path_t& program);
-private:
     static std::vector<std::string> generate_commands(const map_iterator_t& executable);
 
     static std::optional<version> get_version(const std::wstring& unparsed_version);

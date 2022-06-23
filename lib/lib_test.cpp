@@ -54,9 +54,7 @@ bool path_helper::if_executable(const path_helper::path_t &file) {
     return file.has_extension() && file.extension() == ".exe" || file.extension() == ".bat" || file.extension() == ".cmd";
 }
 
-//!
-//! \param program
-//! \return completed vector of information about \p executable
+
 
 auto path_helper::program_info(const path_t & program) -> std::optional<derefenced_info_vector> {
 
