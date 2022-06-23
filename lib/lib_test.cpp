@@ -14,8 +14,8 @@ path_helper::path_helper() {
         path_parsed.emplace_back(PATH.substr(0, delim_pos));
         PATH.erase(0, delim_pos + 1);
         delim_pos = PATH.find(delimiter);
-
     }
+
     path_parsed.emplace_back(PATH);
 
     //deleting similar consequent elements
@@ -36,7 +36,7 @@ void path_helper::check_specific_folder(const path_t& folder) {
 
     std::filesystem::directory_iterator it;
     try{
-       it = std::filesystem::directory_iterator(folder);
+        it = std::filesystem::directory_iterator(folder);
     }
     catch(const std::filesystem::filesystem_error& err){ return; }
 
@@ -55,13 +55,12 @@ bool path_helper::if_executable(const path_helper::path_t &file) {
 }
 
 
-
 auto path_helper::program_info(const path_t & program) -> std::optional<derefenced_info_vector> {
 
     std::string extensions[3] = {".exe", ".bat" ,".cmd"};
     auto node = files.end();
     for (const std::string& extension: extensions){
-        auto program_with_extension = path_t(program)+=extension;
+        auto program_with_extension = path_t(program).stem()+=extension;
         if ((node = files.find(program_with_extension)) != files.end()){
             break;
         }
@@ -72,8 +71,9 @@ auto path_helper::program_info(const path_t & program) -> std::optional<derefenc
     }
     set_versions(node);
     auto iters = node->second;
+    const auto name = node->first;
     std::vector< std::pair<path_t, version> > ans(iters.size());
-    std::transform(iters.begin(), iters.end(), ans.begin(), [&node] (const info_type & info ) { return dereference_info(info, node->first); });
+    std::transform(iters.begin(), iters.end(), ans.begin(), [ &name] (const info_type & info ) { return dereference_info(info, name); });
     return ans;
 }
 
@@ -106,10 +106,12 @@ auto path_helper::get_version(const std::wstring & unparsed_version) -> std::opt
     std::match_results<const wchar_t*> match;
 
     bool b = std::regex_search(unparsed_version.c_str(), match, reg);
-    if (!b) return std::nullopt;
+    if (!b ) return std::nullopt;
+
     std::wstring ans = match.begin()->str();
+
+
     return std::make_optional(std::string(ans.begin(), ans.end()));
-    // TODO: match.begin() ???
 }
 
 
@@ -168,7 +170,7 @@ bool path_helper::write_versions_to_file(data_file& file, const map_iterator_t &
 }
 
 auto path_helper::dereference_info(const path_helper::info_type& info, const path_t& executable) -> std::pair<path_t, version> {
-    return {*(info.first)/executable, info.second.has_value() ? info.second.value() : "version not found"};
+    return {(*info.first)/executable, info.second.has_value() ? info.second.value() : "version not found"};
 }
 
 
@@ -199,12 +201,12 @@ path_helper::data_file::data_file(const path_helper::path_t &desired_path) {
     sa.bInheritHandle = TRUE;
 
     handle = CreateFileW( (LPCWSTR) desired_path.wstring().c_str(),
-                         FILE_APPEND_DATA,
-                         FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
-                         &sa,
-                         OPEN_ALWAYS,
-                         FILE_ATTRIBUTE_NORMAL,
-                         NULL );
+                          FILE_APPEND_DATA,
+                          FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
+                          &sa,
+                          OPEN_ALWAYS,
+                          FILE_ATTRIBUTE_NORMAL,
+                          NULL );
     file = desired_path;
 }
 
