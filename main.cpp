@@ -4,6 +4,7 @@
 #include <iostream>
 #include <lib_test.h>
 #include <argparse/argparse.hpp>
+
 int main(int argc, char* argv[] ){
     path_helper p;
     argparse::ArgumentParser ap("path_helper", "1.0");
@@ -14,7 +15,6 @@ int main(int argc, char* argv[] ){
         ap.parse_args(argc, argv);
     }catch(...){
         std::cerr << "something went wrong\n";
-        std::cerr << ap;
     }
 
     try{
@@ -36,7 +36,6 @@ int main(int argc, char* argv[] ){
         }
     }
     catch(const std::exception& err){
-        std::cout << err.what() << " no files provided\n";
-        std::cout << ap << "\n";
+        std::cout << "no files provided\n";
     }
 }

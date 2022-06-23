@@ -14,8 +14,8 @@ path_helper::path_helper() {
         path_parsed.emplace_back(PATH.substr(0, delim_pos));
         PATH.erase(0, delim_pos + 1);
         delim_pos = PATH.find(delimiter);
-
     }
+
     path_parsed.emplace_back(PATH);
 
     //deleting similar consequent elements
@@ -54,9 +54,6 @@ bool path_helper::if_executable(const path_helper::path_t &file) {
     return file.has_extension() && file.extension() == ".exe" || file.extension() == ".bat" || file.extension() == ".cmd";
 }
 
-//!
-//! \param program
-//! \return completed vector of information about \p executable
 
 auto path_helper::program_info(const path_t & program) -> std::optional<derefenced_info_vector> {
 
@@ -74,8 +71,9 @@ auto path_helper::program_info(const path_t & program) -> std::optional<derefenc
     }
     set_versions(node);
     auto iters = node->second;
+    const auto name = node->first;
     std::vector< std::pair<path_t, version> > ans(iters.size());
-    std::transform(iters.begin(), iters.end(), ans.begin(), [&node] (const info_type & info ) { return dereference_info(info, node->first); });
+    std::transform(iters.begin(), iters.end(), ans.begin(), [ &name] (const info_type & info ) { return dereference_info(info, name); });
     return ans;
 }
 
@@ -172,7 +170,7 @@ bool path_helper::write_versions_to_file(data_file& file, const map_iterator_t &
 }
 
 auto path_helper::dereference_info(const path_helper::info_type& info, const path_t& executable) -> std::pair<path_t, version> {
-    return {(*info.first)/=executable, info.second.has_value() ? info.second.value() : "version not found"};
+    return {(*info.first)/executable, info.second.has_value() ? info.second.value() : "version not found"};
 }
 
 
