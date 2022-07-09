@@ -8,8 +8,12 @@ __pathh %NAME OF DESIRED APPLICATION HERE%
 
 e.g.:
 ```
-__pathh code
-__pathh gcc
+C:\Users\HalseLimon>__pathh code
+C:\Users\HalseLimon\AppData\Local\Programs\Microsoft VS Code\bin\code.cmd; version is -> 1.69.0
+
+C:\Users\HalseLimon>__pathh gcc
+C:\Users\HalseLimon\scoop\apps\gcc\current\bin\gcc.exe; version is -> 11.2.0
+
 ```
 
 Note, that if you end application with SIGINT (Ctrl+C) next use of application might be incorrect.
