@@ -76,7 +76,7 @@ private:
     };
     bool is_folder_in_path(const path_t& folder);
 
-    static std::vector<std::string> generate_commands(const map_iterator_t& executable);
+    static std::vector<std::string> generate_paths(const map_iterator_t& executable);
 
     static std::optional<version> get_version(const std::wstring& unparsed_version);
 

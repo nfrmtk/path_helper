@@ -134,8 +134,10 @@ std::vector<std::wstring> path_helper::read_versions_from_file(data_file& data) 
 
 bool path_helper::write_versions_to_file(data_file& file, const map_iterator_t &executable) {
 
-    auto command_strings = generate_commands(executable);
-
+    auto command_strings = generate_paths(executable);
+    for (auto& path : command_strings){
+        path.append(" --version");
+    }
 
     // preparations for CreateProcessA
     PROCESS_INFORMATION pi;
@@ -180,14 +182,14 @@ bool path_helper::is_folder_in_path( const path_t& folder) {
     return (std::find(path_parsed.begin(), path_parsed.end(), folder) != path_parsed.end());
 }
 
-std::vector<std::string> path_helper::generate_commands(const path_helper::map_iterator_t &executable) {
+std::vector<std::string> path_helper::generate_paths(const path_helper::map_iterator_t &executable) {
     std::vector<std::string> final_vector;
     const auto node = *executable;
 
 
     for (const info_type & info: node.second){
         std::string command;
-        command = ('\"' + (*info.first / node.first).string() + "\" --version ");
+        command = ('\"' + (*info.first / node.first).string() + '\"');
         final_vector.emplace_back(command);
     }
 
