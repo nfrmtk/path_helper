@@ -7,15 +7,23 @@
 
 #include <filesystem>
 #include <string>
-#include <atlstr.h>
 #include <fstream>
 #include <cstdlib>
 #include <cassert>
 #include <map>
 #include <unordered_map>
-#include <Windows.h>
 #include <regex>
 #include <thread>
+#include <optional>
+
+
+#ifdef __linux__
+#include <unix_datafile.hpp>
+#elif _WIN32
+#include <Windows.h>
+#include <atlstr.h>
+#else
+#endif
 
 class path_helper{
 public:
@@ -43,13 +51,13 @@ public:
     using map_iterator_t = std::map<path_t, info_vector>::iterator;
 
 
-    //! \brief environment's PATH parsing is done here, path_parsed vector and files map are formed;
+    //! environment's PATH parsing is done here, path_parsed vector and files map are formed;
     path_helper();
 
     //! for every program in info_vector version is set
     //! \param program
     //! \return nullopt if program is not found
-    //! \return {path, version} vector if no critical error occured
+    //! \return {path,version} vector if no critical error occured
     //! \return version is unset "--version" option for corresponding path doesn't return a version
     //! \throw runtime_error if critical error during getting versions to file occured
     std::optional<derefenced_info_vector> program_info(const path_t& program);

@@ -36,7 +36,7 @@ void path_helper::check_specific_folder(const path_t& folder) {
 
     std::filesystem::directory_iterator it;
     try{
-        it = std::filesystem::directory_iterator(folder);
+       it = std::filesystem::directory_iterator(folder);
     }
     catch(const std::filesystem::filesystem_error& err){ return; }
 
@@ -60,7 +60,7 @@ auto path_helper::program_info(const path_t & program) -> std::optional<derefenc
     std::string extensions[3] = {".exe", ".bat" ,".cmd"};
     auto node = files.end();
     for (const std::string& extension: extensions){
-        auto program_with_extension = path_t(program).stem()+=extension;
+        auto program_with_extension = path_t(program)+=extension;
         if ((node = files.find(program_with_extension)) != files.end()){
             break;
         }
@@ -105,13 +105,15 @@ auto path_helper::get_version(const std::wstring & unparsed_version) -> std::opt
 
     std::match_results<const wchar_t*> match;
 
-    bool b = std::regex_search(unparsed_version.c_str(), match, reg);
-    if (!b ) return std::nullopt;
+    bool if_found_anything = std::regex_search(unparsed_version.c_str(), match, reg);
+    if (!if_found_anything){
+        return std::nullopt;
+    }
 
     std::wstring ans = match.begin()->str();
-
-
     return std::make_optional(std::string(ans.begin(), ans.end()));
+
+    // TODO: match.begin() ???
 }
 
 
@@ -201,12 +203,12 @@ path_helper::data_file::data_file(const path_helper::path_t &desired_path) {
     sa.bInheritHandle = TRUE;
 
     handle = CreateFileW( (LPCWSTR) desired_path.wstring().c_str(),
-                          FILE_APPEND_DATA,
-                          FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
-                          &sa,
-                          OPEN_ALWAYS,
-                          FILE_ATTRIBUTE_NORMAL,
-                          NULL );
+                         FILE_APPEND_DATA,
+                         FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
+                         &sa,
+                         OPEN_ALWAYS,
+                         FILE_ATTRIBUTE_NORMAL,
+                         NULL );
     file = desired_path;
 }
 
