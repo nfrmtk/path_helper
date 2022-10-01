@@ -17,13 +17,8 @@
 #include <optional>
 
 
-#ifdef __linux__
 #include <unix_datafile.hpp>
-#elif _WIN32
-#include <Windows.h>
-#include <atlstr.h>
-#else
-#endif
+#include <windows_datafile.hpp>
 
 class path_helper{
 public:
@@ -51,7 +46,7 @@ public:
     using map_iterator_t = std::map<path_t, info_vector>::iterator;
 
 
-    //! environment's PATH parsing is done here, path_parsed vector and files map are formed;
+    //! environment's PATH parsing is done here, path_parsed vector and mythings map are formed;
     path_helper();
 
     //! for every program in info_vector version is set
@@ -63,17 +58,6 @@ public:
     std::optional<derefenced_info_vector> program_info(const path_t& program);
 
 private:
-    //! raii wrapper for file creation
-    struct data_file{
-        path_t file;
-        HANDLE handle;
-        data_file(const path_t& desired_path);
-        data_file& operator= (data_file&& other ) = delete;
-        data_file(data_file&& other) = delete;
-        data_file(const data_file&) = delete;
-        data_file& operator=(const data_file&) = delete;
-        ~data_file();
-    };
     bool is_folder_in_path(const path_t& folder);
 
     static std::vector<std::string> generate_paths(const map_iterator_t& executable);
@@ -92,9 +76,6 @@ private:
 
     static derefenced_info_type dereference_info(const info_type& info, const path_t& executable);
 
-    static bool write_versions_to_file( data_file& file,  const map_iterator_t & executable);
-
-    static std::vector<std::wstring> read_versions_from_file(data_file& data);
 };
 
 #endif //PATH_HELPER_LIB_TEST_H

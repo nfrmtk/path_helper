@@ -8,7 +8,7 @@ int main(int argc, char* argv[] ){
     path_helper p;
     argparse::ArgumentParser ap("path_helper", "1.0");
     ap.add_argument("file").remaining();
-    ap.add_description("searches in PATH for files provided");
+    ap.add_description("searches in PATH for file provided");
     /*help("finds all occurences of file in user's path_t").remaining();*/
     try{
         ap.parse_args(argc, argv);
@@ -36,7 +36,7 @@ int main(int argc, char* argv[] ){
         }
     }
     catch(const std::exception& err){
-        std::cout << err.what() << " no files provided\n";
+        std::cout << err.what() << " no mythings provided\n";
         std::cout << ap << "\n";
     }
 }

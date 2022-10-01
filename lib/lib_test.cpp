@@ -7,8 +7,12 @@
 
 path_helper::path_helper() {
     std::string PATH = std::getenv("PATH");
+#ifdef _WIN32
     const char delimiter = ';';
-
+#endif
+#ifdef __linux
+    const char delimiter = ':';
+#endif
     ptrdiff_t delim_pos = PATH.find(delimiter);
     while(delim_pos != -1){
         path_parsed.emplace_back(PATH.substr(0, delim_pos));
@@ -42,6 +46,7 @@ void path_helper::check_specific_folder(const path_t& folder) {
 
     for (;it != std::filesystem::directory_iterator(); ++it){
         const path_t & entry = it->path().filename(); // e.g. A.exe, gcc.exe, or code.cmd
+        auto str_entry = entry.string();
         if ( if_executable(entry))
         {
             if (path_iterator != path_parsed.end())
@@ -51,13 +56,20 @@ void path_helper::check_specific_folder(const path_t& folder) {
 }
 
 bool path_helper::if_executable(const path_helper::path_t &file) {
+#ifdef _WIN32
     return file.has_extension() && file.extension() == ".exe" || file.extension() == ".bat" || file.extension() == ".cmd";
+#elifdef __linux
+    return file.
 }
 
 
 auto path_helper::program_info(const path_t & program) -> std::optional<derefenced_info_vector> {
-
-    std::string extensions[3] = {".exe", ".bat" ,".cmd"};
+#ifdef _WIN32
+    const std::string extensions[3] = {".exe", ".bat" ,".cmd"};
+#endif
+#ifdef __linux
+    const std::string extensions[3] = {"",".out", ".sh"};
+#endif
     auto node = files.end();
     for (const std::string& extension: extensions){
         auto program_with_extension = path_t(program)+=extension;
@@ -65,7 +77,7 @@ auto path_helper::program_info(const path_t & program) -> std::optional<derefenc
             break;
         }
     }
-    // auto mutnode = node->operator=(*files.begin());
+    // auto mutnode = node->operator=(*mythings.begin());
     if (node == files.end()) {
         return std::nullopt;
     }
@@ -74,7 +86,7 @@ auto path_helper::program_info(const path_t & program) -> std::optional<derefenc
     const auto name = node->first;
     std::vector< std::pair<path_t, version> > ans(iters.size());
     std::transform(iters.begin(), iters.end(), ans.begin(), [ &name] (const info_type & info ) { return dereference_info(info, name); });
-    return ans;
+    return make_optional(ans);
 }
 
 void path_helper::set_versions(map_iterator_t &executable) {
@@ -94,9 +106,9 @@ void path_helper::set_versions(map_iterator_t &executable) {
 }
 
 std::vector<std::wstring> path_helper::get_unparsed_versions(const map_iterator_t& executable ) {
-    data_file file("data.txt");
-    bool state = write_versions_to_file(file, executable);
-    return read_versions_from_file(file);
+    mythings::data_file file("data.txt");
+    bool state = file.write_versions_to_file(generate_paths(executable));
+    return file.read_versions_from_file();
 }
 
 auto path_helper::get_version(const std::wstring & unparsed_version) -> std::optional<version> {
@@ -114,63 +126,6 @@ auto path_helper::get_version(const std::wstring & unparsed_version) -> std::opt
     return std::make_optional(std::string(ans.begin(), ans.end()));
 
     // TODO: match.begin() ???
-}
-
-
-std::vector<std::wstring> path_helper::read_versions_from_file(data_file& data) {
-    std::basic_fstream<wchar_t> data_file(data.file);
-    std::vector<std::wstring> resulting_data;
-    std::wstring temp, single_version;
-    while (std::getline(data_file, temp)){
-        single_version.append(temp.append(L"\n"));
-        if (temp.find(L"newline") != -1){
-            resulting_data.push_back(single_version);
-            single_version.clear();
-        }
-    }
-    if (!single_version.empty())resulting_data.push_back(single_version);
-    return resulting_data;
-}
-
-bool path_helper::write_versions_to_file(data_file& file, const map_iterator_t &executable) {
-
-    auto command_strings = generate_paths(executable);
-    for (auto& path : command_strings){
-        path.append(" --version");
-    }
-
-    // preparations for CreateProcessA
-    PROCESS_INFORMATION pi;
-    STARTUPINFOA si;
-    BOOL ret = FALSE;
-    DWORD flags = CREATE_NO_WINDOW;
-
-    ZeroMemory( &pi, sizeof(PROCESS_INFORMATION) );
-    ZeroMemory( &si, sizeof(STARTUPINFO) );
-    si.cb = sizeof(STARTUPINFO);
-    si.dwFlags |= STARTF_USESTDHANDLES;
-    si.hStdInput = NULL;
-    si.hStdError = file.handle;
-    si.hStdOutput = file.handle;
-
-    for (std::string& command: command_strings ){
-        char* c_command = command.data();
-        ret = CreateProcessA(NULL, c_command, NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi );
-        if ( ret )
-        {
-            WaitForSingleObject(pi.hProcess, INFINITE);
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
-        }
-        else{
-            return false;
-        }
-        std::ofstream data (file.file, std::fstream::app | std::fstream::in | std::fstream::out);
-        data << "\nnewline\n"; // separator
-        data.close();
-    }
-
-    return true;
 }
 
 auto path_helper::dereference_info(const path_helper::info_type& info, const path_t& executable) -> std::pair<path_t, version> {
@@ -195,25 +150,4 @@ std::vector<std::string> path_helper::generate_paths(const path_helper::map_iter
 
 
     return final_vector;
-}
-
-
-path_helper::data_file::data_file(const path_helper::path_t &desired_path) {
-    SECURITY_ATTRIBUTES sa;
-    sa.nLength = sizeof(sa);
-    sa.lpSecurityDescriptor = NULL;
-    sa.bInheritHandle = TRUE;
-
-    handle = CreateFileW( (LPCWSTR) desired_path.wstring().c_str(),
-                         FILE_APPEND_DATA,
-                         FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
-                         &sa,
-                         OPEN_ALWAYS,
-                         FILE_ATTRIBUTE_NORMAL,
-                         NULL );
-    file = desired_path;
-}
-
-path_helper::data_file::~data_file() {
-    std::filesystem::remove(file);
 }
