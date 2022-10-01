@@ -58,8 +58,10 @@ void path_helper::check_specific_folder(const path_t& folder) {
 bool path_helper::if_executable(const path_helper::path_t &file) {
 #ifdef _WIN32
     return file.has_extension() && file.extension() == ".exe" || file.extension() == ".bat" || file.extension() == ".cmd";
-#elifdef __linux
-    return file.
+#endif
+#ifdef __linux
+    return ! access (path_name, X_OK);
+#endif
 }
 
 
@@ -107,7 +109,9 @@ void path_helper::set_versions(map_iterator_t &executable) {
 
 std::vector<std::wstring> path_helper::get_unparsed_versions(const map_iterator_t& executable ) {
     mythings::data_file file("data.txt");
-    bool state = file.write_versions_to_file(generate_paths(executable));
+    if (!file.write_versions_to_file(generate_paths(executable))){
+        return {};
+    }
     return file.read_versions_from_file();
 }
 

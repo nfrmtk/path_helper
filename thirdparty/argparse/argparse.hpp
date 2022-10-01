@@ -1137,7 +1137,12 @@ namespace argparse {
             }
             std::size_t max_size = 0;
             for ([[maybe_unused]] const auto& [unused, argument] : m_argument_map) {
+#ifdef _WIN32
+                max_size = max(max_size, argument->get_arguments_length());
+#endif
+#ifdef __linux
                 max_size = std::max(max_size, argument->get_arguments_length());
+#endif
             }
             return max_size;
         }

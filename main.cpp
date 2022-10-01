@@ -7,9 +7,9 @@
 int main(int argc, char* argv[] ){
     path_helper p;
     argparse::ArgumentParser ap("path_helper", "1.0");
-    ap.add_argument("file").remaining();
-    ap.add_description("searches in PATH for file provided");
-    /*help("finds all occurences of file in user's path_t").remaining();*/
+    ap.add_argument("file_").remaining();
+    ap.add_description("searches in PATH for file_ provided");
+    /*help("finds all occurences of file_ in user's path_t").remaining();*/
     try{
         ap.parse_args(argc, argv);
     }catch(...){
@@ -18,10 +18,10 @@ int main(int argc, char* argv[] ){
     }
 
     try{
-        auto file = ap.get<std::string>("file");
+        auto file = ap.get<std::string>("file_");
         auto opt_paths = p.program_info(file);
         if (!opt_paths) {
-            std::cout << "file is not found on the system\n";
+            std::cout << "file_ is not found on the system\n";
             return 0;
         }
         auto paths = opt_paths.value();

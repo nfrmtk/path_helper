@@ -54,7 +54,7 @@ public:
     //! \return nullopt if program is not found
     //! \return {path,version} vector if no critical error occured
     //! \return version is unset "--version" option for corresponding path doesn't return a version
-    //! \throw runtime_error if critical error during getting versions to file occured
+    //! \throw runtime_error if critical error during getting versions to file_ occured
     std::optional<derefenced_info_vector> program_info(const path_t& program);
 
 private:
