@@ -12,7 +12,7 @@
 namespace mythings {
     class data_file {
         const char *filename_;
-
+        std::ofstream& logger;
     public:
         using command_list = std::vector<std::string>;
 
@@ -24,7 +24,7 @@ namespace mythings {
 
         data_file &operator=(const data_file &) = delete;
 
-        data_file(const char *file_name) {
+        data_file(const char *file_name, std::ofstream &logger) : logger(logger) {
             filename_ = file_name;
             std::ofstream data(file_name);
             data.close();
@@ -33,11 +33,13 @@ namespace mythings {
         bool write_versions_to_file(const data_file::command_list &full_paths) {
             for (const auto &path: full_paths) {
                 pid_t pid;
+                logger << path + " --version" + (std::string(" \">> ") + filename_ + '\"');
+                freopen(filename_, "wt", stdout);
                 if ((pid = fork()) < 0) {
                     return false;
                 } else if (!pid) {
                     /* этот фрагмент кода выполняется в сыновнем процессе */
-                    execlp(path.c_str(), path.c_str(), " --version", NULL);
+                    execlp(path.c_str(), path.c_str(), " --version" ,  NULL);
                     _exit(0);
                 } else {
                     int status;
@@ -45,6 +47,7 @@ namespace mythings {
                     if (!WIFEXITED(status) || WEXITSTATUS(status)) {
                         return false;
                     }
+                    fclose(stdout);
                     std::ofstream data(filename_, std::fstream::app | std::fstream::in | std::fstream::out);
                     data << "\nnewline\n"; // separator
                     /* а этот фрагмент выполняется в родительском процессе */

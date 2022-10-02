@@ -6,6 +6,10 @@
 
 
 path_helper::path_helper() {
+    logger = log_t{"all.log"};
+
+
+
     std::string PATH = std::getenv("PATH");
 #ifdef _WIN32
     const char delimiter = ';';
@@ -30,9 +34,10 @@ path_helper::path_helper() {
 
 
 void path_helper::check_all_folders() {
-    for (size_t i = 0; i < path_parsed.size(); ++i){
-        check_specific_folder(path_parsed[i]);
+    for (const auto & folder : path_parsed){
+        check_specific_folder(folder);
     }
+    //logout_map();
 }
 
 void path_helper::check_specific_folder(const path_t& folder) {
@@ -42,15 +47,18 @@ void path_helper::check_specific_folder(const path_t& folder) {
     try{
        it = std::filesystem::directory_iterator(folder);
     }
-    catch(const std::filesystem::filesystem_error& err){ return; }
+    catch(const std::filesystem::filesystem_error& err){
+        return;
+    }
 
     for (;it != std::filesystem::directory_iterator(); ++it){
-        const path_t & entry = it->path().filename(); // e.g. A.exe, gcc.exe, or code.cmd
+        const path_t & entry = it->path();
         auto str_entry = entry.string();
         if ( if_executable(entry))
         {
-            if (path_iterator != path_parsed.end())
-                files[entry].push_back({path_iterator, std::nullopt});
+            if (path_iterator != path_parsed.end()){
+                files[entry.filename()].push_back({path_iterator, std::nullopt});
+            }
         }
     }
 }
@@ -60,21 +68,21 @@ bool path_helper::if_executable(const path_helper::path_t &file) {
     return file.has_extension() && file.extension() == ".exe" || file.extension() == ".bat" || file.extension() == ".cmd";
 #endif
 #ifdef __linux
-    return ! access (path_name, X_OK);
+    return ! access (file.c_str(), X_OK);
 #endif
 }
 
 
-auto path_helper::program_info(const path_t & program) -> std::optional<derefenced_info_vector> {
+auto path_helper::program_info(const std::string & program) -> std::optional<derefenced_info_vector> {
 #ifdef _WIN32
     const std::string extensions[3] = {".exe", ".bat" ,".cmd"};
 #endif
 #ifdef __linux
-    const std::string extensions[3] = {"",".out", ".sh"};
+    const std::string extensions[1] = {""};
 #endif
     auto node = files.end();
     for (const std::string& extension: extensions){
-        auto program_with_extension = path_t(program)+=extension;
+        auto program_with_extension =program+extension;
         if ((node = files.find(program_with_extension)) != files.end()){
             break;
         }
@@ -92,13 +100,14 @@ auto path_helper::program_info(const path_t & program) -> std::optional<derefenc
 }
 
 void path_helper::set_versions(map_iterator_t &executable) {
+
     std::vector<std::wstring> unparsed_data = get_unparsed_versions(executable);
     if (unparsed_data.size() != executable->second.size()) throw std::runtime_error("parsing error");
     auto info_vector_it = executable->second.begin();
     for (const std::wstring& str: unparsed_data){
         auto version_v  = get_version(str);
 
-        std::string filename = executable->first.string();
+        std::string filename = executable->first;
         std::string not_found_response = std::string("couldn't get version of ").append(filename);
 
         info_vector_it->second = version_v.has_value() ? *version_v : not_found_response;
@@ -108,7 +117,7 @@ void path_helper::set_versions(map_iterator_t &executable) {
 }
 
 std::vector<std::wstring> path_helper::get_unparsed_versions(const map_iterator_t& executable ) {
-    mythings::data_file file("data.txt");
+    mythings::data_file file("data.txt", logger);
     if (!file.write_versions_to_file(generate_paths(executable))){
         return {};
     }
@@ -154,4 +163,10 @@ std::vector<std::string> path_helper::generate_paths(const path_helper::map_iter
 
 
     return final_vector;
+}
+
+void path_helper::logout_map() {
+    for(const auto& node : files ){
+        logger << node.first << '\n';
+    }
 }

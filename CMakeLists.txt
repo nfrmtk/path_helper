@@ -17,4 +17,9 @@ target_link_libraries(path_helper main_lib)
 
 
 
+add_executable(isExecTest ./tests/is_executable_test.cpp)
+target_link_libraries(isExecTest main_lib)
+
+
+
 

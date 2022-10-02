@@ -41,10 +41,15 @@ public:
             std::vector<info_type>;
     using derefenced_info_vector = std::vector<derefenced_info_type>;
 
-    std::map<path_t, info_vector> files;
+    std::map<std::string, info_vector> files;
 
-    using map_iterator_t = std::map<path_t, info_vector>::iterator;
 
+    using map_iterator_t = std::map<std::string, info_vector>::iterator;
+
+
+
+    using log_t = std::ofstream;
+    log_t logger;
 
     //! environment's PATH parsing is done here, path_parsed vector and mythings map are formed;
     path_helper();
@@ -55,7 +60,9 @@ public:
     //! \return {path,version} vector if no critical error occured
     //! \return version is unset "--version" option for corresponding path doesn't return a version
     //! \throw runtime_error if critical error during getting versions to file_ occured
-    std::optional<derefenced_info_vector> program_info(const path_t& program);
+    std::optional<derefenced_info_vector> program_info(const std::string& program);
+
+    bool if_executable(const path_t& file);
 
 private:
     bool is_folder_in_path(const path_t& folder);
@@ -72,10 +79,9 @@ private:
 
     std::vector<std::wstring> get_unparsed_versions(const map_iterator_t& executable);
 
-    static bool if_executable(const path_t& file);
-
     static derefenced_info_type dereference_info(const info_type& info, const path_t& executable);
 
+    void logout_map();
 };
 
 #endif //PATH_HELPER_LIB_TEST_H
