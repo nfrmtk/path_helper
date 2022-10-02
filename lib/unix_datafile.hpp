@@ -9,6 +9,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <wait.h>
+#include <fcntl.h>
 namespace mythings {
     class data_file {
         const char *filename_;
@@ -30,24 +31,32 @@ namespace mythings {
             data.close();
         }
 
+        static std::string remove_braces(const std::string &basicString) {
+            return basicString.substr(1, basicString.size() - 2);
+        }
+
         bool write_versions_to_file(const data_file::command_list &full_paths) {
             for (const auto &path: full_paths) {
                 pid_t pid;
-                logger << path + " --version" + (std::string(" \">> ") + filename_ + '\"');
-                freopen(filename_, "wt", stdout);
+                auto ready_path = remove_braces(path);
+                logger << ready_path + "--version\n";
                 if ((pid = fork()) < 0) {
+                    logger << "failed to make new process. exiting function\n";
                     return false;
                 } else if (!pid) {
-                    /* этот фрагмент кода выполняется в сыновнем процессе */
-                    execlp(path.c_str(), path.c_str(), " --version" ,  NULL);
+                    int fd = open(filename_, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+
+                    dup2(fd, 1);
+                    close(fd);
+                    execlp(ready_path.c_str(), ready_path.c_str(), "--version" ,  NULL);
                     _exit(0);
                 } else {
                     int status;
                     wait(&status);
                     if (!WIFEXITED(status) || WEXITSTATUS(status)) {
                         return false;
-                    }
-                    fclose(stdout);
+                    } // todo: recursion. regular cycle doesn't work
+
                     std::ofstream data(filename_, std::fstream::app | std::fstream::in | std::fstream::out);
                     data << "\nnewline\n"; // separator
                     /* а этот фрагмент выполняется в родительском процессе */
