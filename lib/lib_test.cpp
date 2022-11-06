@@ -14,7 +14,7 @@ path_helper::path_helper() {
 #ifdef _WIN32
     const char delimiter = ';';
 #endif
-#ifdef __linux
+#if defined(__linux) || defined(__APPLE__)
     const char delimiter = ':';
 #endif
     ptrdiff_t delim_pos = PATH.find(delimiter);
@@ -67,7 +67,7 @@ bool path_helper::if_executable(const path_helper::path_t &file) {
 #ifdef _WIN32
     return file.has_extension() && file.extension() == ".exe" || file.extension() == ".bat" || file.extension() == ".cmd";
 #endif
-#ifdef __linux
+#if defined(__linux) || defined(__APPLE__)
     return ! access (file.c_str(), X_OK);
 #endif
 }
@@ -77,7 +77,7 @@ auto path_helper::program_info(const std::string & program) -> std::optional<der
 #ifdef _WIN32
     const std::string extensions[3] = {".exe", ".bat" ,".cmd"};
 #endif
-#ifdef __linux
+#if defined(__linux) || defined(__APPLE__)
     const std::string extensions[1] = {""};
 #endif
     auto node = files.end();
@@ -117,7 +117,7 @@ void path_helper::set_versions(map_iterator_t &executable) {
 }
 
 std::vector<std::wstring> path_helper::get_unparsed_versions(const map_iterator_t& executable ) {
-    mythings::data_file file("data.txt", logger);
+    util::data_file file("data.txt", logger);
     if (!file.write_versions_to_file(generate_paths(executable))){
         return {};
     }

@@ -1,16 +1,24 @@
 //
 // Created by nfrmtk on 29.09.22.
 //
-#ifdef __linux
+#if defined(__linux) || defined(__APPLE__)
 
 #ifndef PATH_HELPER_UNIX_DATAFILE_HPP
 #define PATH_HELPER_UNIX_DATAFILE_HPP
 #include <filesystem>
 #include <fstream>
 #include <unistd.h>
-#include <wait.h>
 #include <fcntl.h>
-namespace mythings {
+#include <sys/stat.h>
+
+
+#ifdef __linux
+#include <wait.h>
+#else
+#include <sys/wait.h>
+#endif
+
+namespace util {
     class data_file {
         const char *filename_;
         std::ofstream& logger;
@@ -25,9 +33,8 @@ namespace mythings {
 
         data_file &operator=(const data_file &) = delete;
 
-        data_file(const char *file_name, std::ofstream &logger) : logger(logger) {
-            filename_ = file_name;
-            std::ofstream data(file_name);
+        data_file(const char *file_name, std::ofstream &logger) : logger(logger), filename_(file_name) {
+            std::ofstream data(filename_);
             data.close();
         }
 
@@ -35,37 +42,58 @@ namespace mythings {
             return basicString.substr(1, basicString.size() - 2);
         }
 
+        std::filesystem::path make_command_file(const command_list &commands) {
+            logger << "entered function for making command file\n";
+            remove("commands.sh");
+
+            logger << "removed command file\n";
+            std::ofstream cmds("./commands.sh");
+            cmds << "#!/bin/bash\n";
+            for (const auto& command : commands){
+                cmds << command << " --version >> data.txt" << '\n';
+//                cmds.flush();
+                logger << command << " --version >> data.txt" << '\n';
+                cmds << "echo newline" << " >> data.txt" << '\n';
+            }
+            cmds.close();
+            logger << "filled command file with good stuff!\n";
+
+            return "./commands.sh";
+        }
+
         bool write_versions_to_file(const data_file::command_list &full_paths) {
-            for (const auto &path: full_paths) {
-                pid_t pid;
-                auto ready_path = remove_braces(path);
-                logger << ready_path + "--version\n";
-                if ((pid = fork()) < 0) {
-                    logger << "failed to make new process. exiting function\n";
-                    return false;
-                } else if (!pid) {
-                    int fd = open(filename_, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-
-                    dup2(fd, 1);
-                    close(fd);
-                    execlp(ready_path.c_str(), ready_path.c_str(), "--version" ,  NULL);
-                    _exit(0);
-                } else {
-                    int status;
-                    wait(&status);
-                    if (!WIFEXITED(status) || WEXITSTATUS(status)) {
-                        return false;
-                    } // todo: recursion. regular cycle doesn't work
-
-                    std::ofstream data(filename_, std::fstream::app | std::fstream::in | std::fstream::out);
-                    data << "\nnewline\n"; // separator
-                    /* а этот фрагмент выполняется в родительском процессе */
-                }
+            auto file_to_execute = make_command_file(full_paths);
+            if (chmod(file_to_execute.c_str(), S_IRWXU) != 0){
+                logger << "couldn't change file permissions";
+                return false;
+            }
+            if (chmod("./data.txt", S_IRWXU) != 0){
+                logger << "couldn't change file permissions";
+                return false;
+            }
+            pid_t pid;
+            logger << file_to_execute.string() << "is the thing\n";
+            if ((pid = fork()) < 0) {
+                logger << "couldn't create a process\n";
+                return false;
+            } else if (pid == 0) {
+                auto str_file = file_to_execute.string();
+                auto _str_file = str_file;
+                char* const _argv[] = {
+                        str_file.data(),
+                        NULL
+                };
+                execv(_str_file.data(), _argv);
+                _exit(0);
+            } else {
+                wait(NULL);  // дожидаемся завершения процесса
+                //remove(file_to_execute.c_str());
             }
             return true;
         }
 
-        std::vector<std::wstring> read_versions_from_file() const {
+        [[nodiscard]] std::vector<std::wstring> read_versions_from_file() const {
+
             std::basic_fstream<wchar_t> data_file(filename_);
             std::vector<std::wstring> resulting_data;
             std::wstring temp, single_version;
@@ -79,7 +107,15 @@ namespace mythings {
             if (!single_version.empty())resulting_data.push_back(single_version);
             return resulting_data;
         }
+        ~data_file() {
+            remove("commands.sh");
+            remove("data.txt");
+        }
     };
+
+
+
+
 }
 #endif //PATH_HELPER_UNIX_DATAFILE_HPP
 #endif // __linux
