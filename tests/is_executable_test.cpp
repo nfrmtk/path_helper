@@ -7,6 +7,5 @@
 #include <lib_test.h>
 
 TEST_CASE("main") {
-
     CHECK(path_helper().if_executable(std::filesystem::current_path()));
 }

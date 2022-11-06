@@ -36,7 +36,7 @@ int main(int argc, char* argv[] ){
         }
     }
     catch(const std::exception& err){
-        std::cout << err.what() << " no mythings provided\n";
+        std::cout << err.what() << " no files provided\n";
         std::cout << ap << "\n";
     }
 }
