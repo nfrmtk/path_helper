@@ -21,11 +21,11 @@ int main(int argc, char* argv[] ){
         auto file = ap.get<std::string>("file_");
         auto opt_paths = p.program_info(file);
         if (!opt_paths) {
-            std::cout << "file_ is not found on the system\n";
-            return 0;
+            std::cout << file + " is not found on the system\n";
+            return EXIT_FAILURE;
         }
         auto paths = opt_paths.value();
-        if (paths.size()){
+        if (!paths.empty()){
             std::cout << file << " is mentioned here:\n";
             for (const auto& path : paths){
                 std::cout << path.first.string() << "; version is -> " << path.second <<"\n";
@@ -36,7 +36,7 @@ int main(int argc, char* argv[] ){
         }
     }
     catch(const std::exception& err){
-        std::cout << err.what() << " no files provided\n";
-        std::cout << ap << "\n";
+        std::cout <<"no files provided\n";
+        return EXIT_FAILURE;
     }
 }
