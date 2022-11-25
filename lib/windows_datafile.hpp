@@ -2,11 +2,10 @@
 // Created by nfrmtk on 01.10.22.
 //
 #ifdef _WIN32
-
 #ifndef PATH_HELPER_WINDOWS_DATAFILE_HPP
 #define PATH_HELPER_WINDOWS_DATAFILE_HPP
 #include <Windows.h>
-namespace mythings{
+namespace util{
     class data_file {
         const char *file_;
         HANDLE handle_;

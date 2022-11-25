@@ -19,12 +19,7 @@ int main(int argc, char* argv[] ){
 
     try{
         auto file = ap.get<std::string>("file_");
-        auto opt_paths = p.program_info(file);
-        if (!opt_paths) {
-            std::cout << file + " is not found on the system\n";
-            return EXIT_FAILURE;
-        }
-        auto paths = opt_paths.value();
+        auto paths = p.program_info(file);
         if (!paths.empty()){
             std::cout << file << " is mentioned here:\n";
             for (const auto& path : paths){

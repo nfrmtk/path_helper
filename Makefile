@@ -1,4 +1,4 @@
-default_target: all
+default_target: release
 
 .PHONY : default_target
 

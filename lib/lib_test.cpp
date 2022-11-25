@@ -73,7 +73,7 @@ bool path_helper::if_executable(const path_helper::path_t &file) {
 }
 
 
-auto path_helper::program_info(const std::string & program) -> std::optional<derefenced_info_vector> {
+auto path_helper::program_info(const std::string & program) -> derefenced_info_vector {
 #ifdef _WIN32
     const std::string extensions[3] = {".exe", ".bat" ,".cmd"};
 #endif
@@ -89,14 +89,14 @@ auto path_helper::program_info(const std::string & program) -> std::optional<der
     }
     // auto mutnode = node->operator=(*mythings.begin());
     if (node == files.end()) {
-        return std::nullopt;
+        return {};
     }
     set_versions(node);
     auto iters = node->second;
     const auto name = node->first;
     std::vector< std::pair<path_t, version> > ans(iters.size());
     std::transform(iters.begin(), iters.end(), ans.begin(), [ &name] (const info_type & info ) { return dereference_info(info, name); });
-    return make_optional(ans);
+    return ans;
 }
 
 void path_helper::set_versions(map_iterator_t &executable) {

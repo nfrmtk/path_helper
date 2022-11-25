@@ -23,7 +23,6 @@
 class path_helper{
 public:
     using path_t = std::filesystem::path;
-    std::vector<path_t> path_parsed;
 
     using vector_iterator_t = std::vector<path_t>::const_iterator;
     using version = std::string;
@@ -41,7 +40,6 @@ public:
             std::vector<info_type>;
     using derefenced_info_vector = std::vector<derefenced_info_type>;
 
-    std::map<std::string, info_vector> files;
 
 
     using map_iterator_t = std::map<std::string, info_vector>::iterator;
@@ -49,18 +47,17 @@ public:
 
 
     using log_t = std::ofstream;
-    log_t logger;
 
     //! environment's PATH parsing is done here, path_parsed vector and mythings map are formed;
     path_helper();
 
     //! for every program in info_vector version is set
     //! \param program
-    //! \return nullopt if program is not found
+    //! \return empty vector
     //! \return {path,version} vector if no critical error occured
     //! \return version is unset "--version" option for corresponding path doesn't return a version
     //! \throw runtime_error if critical error during getting versions to file_ occured
-    std::optional<derefenced_info_vector> program_info(const std::string& program);
+    derefenced_info_vector program_info(const std::string& program);
 
     bool if_executable(const path_t& file);
 
@@ -82,6 +79,11 @@ private:
     static derefenced_info_type dereference_info(const info_type& info, const path_t& executable);
 
     void logout_map();
+private:
+    std::vector<path_t> path_parsed;
+    log_t logger;
+    std::map<std::string, info_vector> files;
+
 };
 
 #endif //PATH_HELPER_LIB_TEST_H

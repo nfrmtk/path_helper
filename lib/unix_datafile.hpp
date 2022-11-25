@@ -14,10 +14,10 @@
 
 #ifdef __linux
 #include <wait.h>
-#else
+#else // __APPLE__
 #include <sys/wait.h>
 #endif
-
+///asd
 namespace util {
     class data_file {
         const char *filename_;
