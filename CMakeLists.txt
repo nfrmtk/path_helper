@@ -16,10 +16,14 @@ add_executable(path_helper main.cpp)
 target_link_libraries(path_helper main_lib)
 
 
-
 add_executable(isExecTest ./tests/is_executable_test.cpp)
 target_link_libraries(isExecTest main_lib)
-
+install(TARGETS isExecTest path_helper
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}
+        CONFIGURATIONS Release)
+install(TARGETS isExecTest path_helper
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG}
+        CONFIGURATIONS Debug)
 
 
 
