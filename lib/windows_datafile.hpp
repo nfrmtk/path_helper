@@ -9,6 +9,8 @@ namespace util{
     class data_file {
         const char *file_;
         HANDLE handle_;
+        using log_t = std::ofstream;
+        log_t& logger;
     public:
         using command_list = std::vector<std::string>;
 
@@ -24,7 +26,7 @@ namespace util{
         data_file &operator=(const data_file &) = delete;
 
 
-        explicit data_file(const char *desired_path) {
+        explicit data_file(const char *desired_path, log_t& logger) : logger(logger) {
             SECURITY_ATTRIBUTES sa;
             sa.nLength = sizeof(sa);
             sa.lpSecurityDescriptor = NULL;

@@ -57,7 +57,7 @@ void path_helper::check_specific_folder(const path_t& folder) {
         if ( if_executable(entry))
         {
             if (path_iterator != path_parsed.end()){
-                files[entry.filename()].push_back({path_iterator, std::nullopt});
+                files[entry.filename().string()].push_back({path_iterator, std::nullopt});
             }
         }
     }
