@@ -17,13 +17,13 @@ build_release:
 release:
 	@make build_release
 	@cd build_release && \
-	make all
+	cmake --build .
 
 
 debug:
 	@make build_debug
 	@cd build_debug && \
-	make all
+	cmake --build .
 
 .PHONY: dist-clean
 dist-clean:
